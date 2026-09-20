@@ -1,0 +1,76 @@
+.tabsContainer {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 1px solid var(--border-app);
+  margin-bottom: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.tabButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 2px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-fast, 0.15s ease);
+}
+
+.tabButton:hover {
+  color: var(--text-primary);
+}
+
+.tabButton.active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tabButton.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--text-primary);
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 1px 7px;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.tabButton.active .badge {
+  background-color: var(--surface-card);
+  border-color: var(--border-app);
+  color: var(--text-primary);
+}
+
+.attentionBadge {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.completeBadge {
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}

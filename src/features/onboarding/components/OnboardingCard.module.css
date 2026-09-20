@@ -1,0 +1,217 @@
+.card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  transition: border-color var(--transition-fast, 0.15s ease), box-shadow var(--transition-fast, 0.15s ease);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.cardAttention {
+  border-left: 3px solid #d97706;
+}
+
+.cardComplete {
+  border-left: 3px solid #059669;
+}
+
+.mainInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.contentCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.employeeName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.employeeName:hover {
+  text-decoration: underline;
+}
+
+.roleText {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.urgencyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.urgencyUrgent {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.urgencyComplete {
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.progressMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.progressFraction {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.progressBarContainer {
+  width: 100%;
+  max-width: 260px;
+  height: 6px;
+  background-color: var(--surface-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: var(--text-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+.progressBarComplete {
+  background-color: #059669;
+}
+
+.remainingTagsList {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.remainingLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+
+.taskTag {
+  font-size: 0.6875rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.actionSection {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.openLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
+  white-space: nowrap;
+}
+
+.openLink:hover {
+  background-color: var(--surface-card);
+  border-color: var(--border-strong);
+}
+
+.openLink:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actionSection {
+    justify-content: flex-end;
+    margin-top: 8px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 12px;
+  }
+
+  .openLink {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .progressBarContainer {
+    max-width: 100%;
+  }
+}

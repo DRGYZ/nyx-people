@@ -1,13 +1,18 @@
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Check, ArrowRight } from 'lucide-react';
 import { OnboardingDetails } from '@/domain/employee';
 import styles from './OnboardingChecklist.module.css';
 
 interface OnboardingChecklistProps {
   onboarding: OnboardingDetails;
+  employeeId?: string;
 }
 
-export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onboarding }) => {
+export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({
+  onboarding,
+  employeeId,
+}) => {
   return (
     <div className={styles.card} aria-labelledby="onboarding-heading">
       <div className={styles.header}>
@@ -51,6 +56,19 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onboar
         <div className={styles.partnerCard}>
           <span className={styles.partnerLabel}>Responsible Partner</span>
           <p className={styles.partnerNote}>{onboarding.responsiblePartner.note}</p>
+        </div>
+      )}
+
+      {employeeId && (
+        <div className={styles.actionFooter}>
+          <Link
+            to={`/employees/${employeeId}/onboarding`}
+            className={styles.manageLink}
+            aria-label="Manage onboarding checklist"
+          >
+            <span>Manage checklist</span>
+            <ArrowRight size={13} aria-hidden="true" />
+          </Link>
         </div>
       )}
     </div>

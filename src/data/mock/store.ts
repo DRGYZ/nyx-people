@@ -3,9 +3,27 @@ import {
   DirectoryCounts,
   EmployeeCreateInput,
   EmployeeUpdateInput,
-  OnboardingTask,
 } from '@/domain/employee';
-import { GetEmployeesParams, GetEmployeesResponse } from '@/data/contracts';
+import {
+  GetEmployeesParams,
+  GetEmployeesResponse,
+  GetOnboardingListResponse,
+  GetOnboardingPlanResponse,
+  UpdateOnboardingTaskResponse,
+  OnboardingEmployeeSummary,
+} from '@/data/contracts';
+import {
+  OnboardingTab,
+  OnboardingCounts,
+  calculateOnboardingProgress,
+  calculateOnboardingCounts,
+  filterOnboardingEmployees,
+  formatStartUrgency,
+  needsAttention,
+  isStartingSoon,
+  createDefaultOnboardingTasks,
+  normalizeOnboardingTasks,
+} from '@/domain/onboarding';
 import { deterministicEmployees } from './fixtures';
 
 export const STORAGE_KEY = 'ledger-hr_employees_v1';
@@ -19,7 +37,18 @@ function loadPersistedEmployees(): Employee[] | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed as Employee[];
+      return (parsed as Employee[]).map((emp) => {
+        if (emp.onboarding && emp.onboarding.tasks) {
+          return {
+            ...emp,
+            onboarding: {
+              ...emp.onboarding,
+              tasks: normalizeOnboardingTasks(emp.onboarding.tasks),
+            },
+          };
+        }
+        return emp;
+      });
     }
   } catch (err) {
     console.warn('Failed to parse persisted employees from localStorage:', err);
@@ -271,15 +300,7 @@ export class EmployeeMockStore {
     }
 
     const now = new Date().toISOString();
-
-    const defaultTasks: OnboardingTask[] = [
-      { id: 'task-1', title: 'Hardware provisioning', subtitle: 'Workstation configuration and security keys', completed: false },
-      { id: 'task-2', title: 'Identity & workspace accounts', subtitle: 'Single sign-on and operational system access', completed: false },
-      { id: 'task-3', title: 'Compliance & security briefing', subtitle: 'Data privacy and regulatory policy acknowledgments', completed: false },
-      { id: 'task-4', title: 'Team introduction & 1:1 schedule', subtitle: 'Manager introduction and buddy pairing', completed: false },
-      { id: 'task-5', title: 'Development environment setup', subtitle: 'Repository permissions and workspace tooling', completed: false },
-      { id: 'task-6', title: '30-day checkpoint schedule', subtitle: 'Initial milestone alignment with People Ops', completed: false },
-    ];
+    const defaultTasks = createDefaultOnboardingTasks();
 
     const newEmployee: Employee = {
       id: newId,
@@ -369,6 +390,21 @@ export class EmployeeMockStore {
 
     const now = new Date().toISOString();
 
+    let onboarding = target.onboarding;
+    if (input.status === 'onboarding' && !onboarding) {
+      const defaultTasks = createDefaultOnboardingTasks();
+      onboarding = {
+        totalTasks: defaultTasks.length,
+        completedTasks: 0,
+        tasks: defaultTasks,
+        responsiblePartner: {
+          name: 'Eleanor Vance',
+          note: 'Assigned People Operations Partner for onboarding setup',
+        },
+        attentionSummary: 'New onboarding workflow initialized. Pending initial account setup.',
+      };
+    }
+
     const updatedEmployee: Employee = {
       ...target,
       person: {
@@ -402,6 +438,7 @@ export class EmployeeMockStore {
         startDate: input.startDate !== undefined ? input.startDate : target.employment.startDate,
         manager,
       },
+      onboarding,
       timestamps: {
         ...target.timestamps,
         updatedAt: now,
@@ -416,6 +453,128 @@ export class EmployeeMockStore {
     }
     savePersistedEmployees(this.employees);
     return updatedEmployee;
+  }
+
+  public getOnboardingCounts(): OnboardingCounts {
+    return calculateOnboardingCounts(this.employees);
+  }
+
+  public getOnboardingList(tab: OnboardingTab = 'all'): GetOnboardingListResponse {
+    const filtered = filterOnboardingEmployees(this.employees, tab);
+    const counts = calculateOnboardingCounts(this.employees);
+
+    // Sort: starting soonest first, then name
+    const sorted = [...filtered].sort((a, b) => {
+      const dateComp = a.employment.startDate.localeCompare(b.employment.startDate);
+      if (dateComp !== 0) return dateComp;
+      return a.person.lastName.localeCompare(b.person.lastName);
+    });
+
+    const data: OnboardingEmployeeSummary[] = sorted.map((emp) => {
+      const tasks = emp.onboarding?.tasks || [];
+      const progress = calculateOnboardingProgress(tasks);
+      const remainingTasks = tasks.filter((t) => !t.completed).map((t) => t.title);
+
+      return {
+        employee: emp,
+        progress,
+        urgency: formatStartUrgency(emp.employment.startDate),
+        needsAttention: needsAttention(emp),
+        startingSoon: isStartingSoon(emp.employment.startDate),
+        remainingTasks,
+      };
+    });
+
+    return {
+      data,
+      counts,
+      total: data.length,
+    };
+  }
+
+  public getOnboardingPlan(employeeId: string): GetOnboardingPlanResponse | null {
+    const emp = this.getEmployeeById(employeeId);
+    if (!emp) return null;
+
+    if (!emp.onboarding) {
+      const defaultTasks = createDefaultOnboardingTasks();
+      emp.onboarding = {
+        totalTasks: defaultTasks.length,
+        completedTasks: 0,
+        tasks: defaultTasks,
+        responsiblePartner: {
+          name: 'Eleanor Vance',
+          note: 'Assigned People Operations Partner for onboarding setup',
+        },
+        attentionSummary: 'Onboarding workflow initialized.',
+      };
+      savePersistedEmployees(this.employees);
+    }
+
+    emp.onboarding.tasks = normalizeOnboardingTasks(emp.onboarding.tasks);
+    emp.onboarding.totalTasks = 6;
+    emp.onboarding.completedTasks = emp.onboarding.tasks.filter((t) => t.completed).length;
+
+    const progress = calculateOnboardingProgress(emp.onboarding.tasks);
+
+    return {
+      employee: emp,
+      onboarding: emp.onboarding,
+      progress,
+    };
+  }
+
+  public updateOnboardingTask(
+    employeeId: string,
+    taskKey: string,
+    completed: boolean
+  ): UpdateOnboardingTaskResponse {
+    const emp = this.getEmployeeById(employeeId);
+    if (!emp) {
+      throw new Error(`Employee '${employeeId}' not found.`);
+    }
+
+    if (!emp.onboarding) {
+      const defaultTasks = createDefaultOnboardingTasks();
+      emp.onboarding = {
+        totalTasks: 6,
+        completedTasks: 0,
+        tasks: defaultTasks,
+      };
+    }
+
+    emp.onboarding.tasks = normalizeOnboardingTasks(emp.onboarding.tasks);
+
+    const taskIndex = emp.onboarding.tasks.findIndex(
+      (t) => t.id.toLowerCase() === taskKey.toLowerCase()
+    );
+
+    const task = emp.onboarding.tasks[taskIndex];
+    if (!task) {
+      throw new Error(`Task '${taskKey}' not found for employee '${employeeId}'.`);
+    }
+
+    task.completed = completed;
+    task.completedAt = completed ? new Date().toISOString() : undefined;
+
+    emp.onboarding.completedTasks = emp.onboarding.tasks.filter((t) => t.completed).length;
+    emp.onboarding.totalTasks = emp.onboarding.tasks.length;
+    emp.timestamps.updatedAt = new Date().toISOString();
+
+    if (emp.onboarding.completedTasks === emp.onboarding.totalTasks) {
+      emp.onboarding.attentionSummary = 'All onboarding tasks complete. Day-one readiness achieved.';
+    } else {
+      const remaining = emp.onboarding.tasks.filter((t) => !t.completed).map((t) => t.title).join(', ');
+      emp.onboarding.attentionSummary = `Onboarding is ${emp.onboarding.completedTasks} of ${emp.onboarding.totalTasks} complete. Remaining: ${remaining}.`;
+    }
+
+    savePersistedEmployees(this.employees);
+
+    return {
+      employee: emp,
+      onboarding: emp.onboarding,
+      progress: calculateOnboardingProgress(emp.onboarding.tasks),
+    };
   }
 }
 

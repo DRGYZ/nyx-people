@@ -137,3 +137,31 @@
   color: var(--text-primary);
   line-height: 1.4;
 }
+
+.actionFooter {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.manageLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-app);
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.manageLink:hover {
+  background-color: var(--surface-card);
+  border-color: var(--border-strong);
+}

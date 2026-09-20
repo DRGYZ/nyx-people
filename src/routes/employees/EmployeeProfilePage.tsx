@@ -88,7 +88,7 @@ export const EmployeeProfilePage: React.FC = () => {
 
         {hasOnboarding && onboarding && (
           <div className={styles.rightColumn}>
-            <OnboardingChecklist onboarding={onboarding} />
+            <OnboardingChecklist onboarding={onboarding} employeeId={employee.id} />
           </div>
         )}
       </div>

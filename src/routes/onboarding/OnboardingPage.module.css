@@ -1,0 +1,55 @@
+.pageContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.cardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loadingList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loadingCard {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.errorBanner {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.retryButton {
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background-color: #ffffff;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.retryButton:hover {
+  background-color: #fef2f2;
+}

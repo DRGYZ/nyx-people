@@ -4,6 +4,8 @@ import { EmployeesPage } from '@/routes/employees/EmployeesPage';
 import { EmployeeProfilePage } from '@/routes/employees/EmployeeProfilePage';
 import { NewEmployeePage } from '@/routes/employees/NewEmployeePage';
 import { EditEmployeePage } from '@/routes/employees/EditEmployeePage';
+import { OnboardingPage } from '@/routes/onboarding/OnboardingPage';
+import { EmployeeOnboardingPage } from '@/routes/onboarding/EmployeeOnboardingPage';
 import { PlaceholderPage } from '@/routes/placeholders/PlaceholderPage';
 
 export const router = createBrowserRouter([
@@ -32,24 +34,22 @@ export const router = createBrowserRouter([
         element: <EditEmployeePage />,
       },
       {
+        path: 'employees/:employeeId/onboarding',
+        element: <EmployeeOnboardingPage />,
+      },
+      {
         path: 'overview',
         element: (
           <PlaceholderPage
             title="Overview"
             description="Company-wide headcount telemetry, turnover, and operational metrics."
-            plannedMilestone="Milestone 2"
+            plannedMilestone="Milestone 4"
           />
         ),
       },
       {
         path: 'onboarding',
-        element: (
-          <PlaceholderPage
-            title="Onboarding Workflows"
-            description="Cohort onboarding pipelines, automated task tracking, and manager approvals."
-            plannedMilestone="Milestone 3"
-          />
-        ),
+        element: <OnboardingPage />,
       },
       {
         path: '*',

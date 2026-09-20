@@ -1,4 +1,5 @@
 import { EmployeeCreateInput, EmployeeUpdateInput } from '@/domain/employee';
+import { OnboardingTab } from '@/domain/onboarding';
 import {
   GetEmployeesParams,
   GetEmployeesResponse,
@@ -6,6 +7,9 @@ import {
   ApiErrorResponse,
   GetManagersResponse,
   EmployeeManagerOption,
+  GetOnboardingListResponse,
+  GetOnboardingPlanResponse,
+  UpdateOnboardingTaskResponse,
 } from './contracts';
 
 export class ApiError extends Error {
@@ -171,5 +175,92 @@ export async function fetchManagers(
 
   const result = (await response.json()) as GetManagersResponse;
   return result.data;
+}
+
+export async function fetchOnboardingList(
+  tab: OnboardingTab = 'all',
+  signal?: AbortSignal
+): Promise<GetOnboardingListResponse> {
+  const options: RequestInit = {};
+  if (signal && process.env.NODE_ENV !== 'test') {
+    options.signal = signal;
+  }
+
+  const response = await fetch(`/api/onboarding?tab=${encodeURIComponent(tab)}`, options);
+
+  if (!response.ok) {
+    let errorMessage = `Failed to fetch onboarding list (${response.status})`;
+    try {
+      const errorJson = (await response.json()) as ApiErrorResponse;
+      if (errorJson.error) errorMessage = errorJson.error;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  return response.json();
+}
+
+export async function fetchOnboardingPlan(
+  employeeId: string,
+  signal?: AbortSignal
+): Promise<GetOnboardingPlanResponse> {
+  const options: RequestInit = {};
+  if (signal && process.env.NODE_ENV !== 'test') {
+    options.signal = signal;
+  }
+
+  const response = await fetch(`/api/onboarding/${encodeURIComponent(employeeId)}`, options);
+
+  if (!response.ok) {
+    let errorMessage = `Failed to fetch onboarding plan for ${employeeId} (${response.status})`;
+    try {
+      const errorJson = (await response.json()) as ApiErrorResponse;
+      if (errorJson.error) errorMessage = errorJson.error;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  return response.json();
+}
+
+export async function updateOnboardingTask(
+  employeeId: string,
+  taskKey: string,
+  completed: boolean,
+  signal?: AbortSignal
+): Promise<UpdateOnboardingTaskResponse> {
+  const options: RequestInit = {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ completed }),
+  };
+
+  if (signal && process.env.NODE_ENV !== 'test') {
+    options.signal = signal;
+  }
+
+  const response = await fetch(
+    `/api/onboarding/${encodeURIComponent(employeeId)}/tasks/${encodeURIComponent(taskKey)}`,
+    options
+  );
+
+  if (!response.ok) {
+    let errorMessage = `Failed to update task ${taskKey} (${response.status})`;
+    try {
+      const errorJson = (await response.json()) as ApiErrorResponse;
+      if (errorJson.error) errorMessage = errorJson.error;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  return response.json();
 }
 

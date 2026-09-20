@@ -160,5 +160,74 @@ export const handlers = [
       );
     }
   }),
+
+  // GET /api/onboarding
+  http.get('/api/onboarding', async ({ request }) => {
+    if (process.env.NODE_ENV !== 'test') {
+      await delay(60);
+    }
+
+    const url = new URL(request.url);
+    const tab = (url.searchParams.get('tab') || url.searchParams.get('view') || 'all') as any;
+
+    const response = mockStore.getOnboardingList(tab);
+    return HttpResponse.json(response);
+  }),
+
+  // GET /api/onboarding/:employeeId
+  http.get('/api/onboarding/:employeeId', async ({ params }) => {
+    if (process.env.NODE_ENV !== 'test') {
+      await delay(50);
+    }
+
+    const employeeId = params.employeeId as string;
+    const plan = mockStore.getOnboardingPlan(employeeId);
+
+    if (!plan) {
+      return HttpResponse.json(
+        { error: `Onboarding plan for employee '${employeeId}' not found.`, statusCode: 404 },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json(plan);
+  }),
+
+  // PATCH /api/onboarding/:employeeId/tasks/:taskKey
+  http.patch('/api/onboarding/:employeeId/tasks/:taskKey', async ({ params, request }) => {
+    if (process.env.NODE_ENV !== 'test') {
+      await delay(60);
+    }
+
+    const employeeId = params.employeeId as string;
+    const taskKey = params.taskKey as string;
+
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(
+        { error: 'Invalid JSON request body', statusCode: 400 },
+        { status: 400 }
+      );
+    }
+
+    const completed = typeof body.completed === 'boolean' ? body.completed : true;
+
+    try {
+      const response = mockStore.updateOnboardingTask(employeeId, taskKey, completed);
+      return HttpResponse.json(response);
+    } catch (err: any) {
+      const message = err.message || '';
+      const isNotFound = message.includes('not found');
+      return HttpResponse.json(
+        {
+          error: message || 'Failed to update onboarding task',
+          statusCode: isNotFound ? 404 : 400,
+        },
+        { status: isNotFound ? 404 : 400 }
+      );
+    }
+  }),
 ];
 

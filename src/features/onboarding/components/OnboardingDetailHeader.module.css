@@ -1,0 +1,107 @@
+.container {
+  margin-bottom: 24px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin-bottom: 16px;
+  transition: color var(--transition-fast, 0.15s ease);
+}
+
+.backLink:hover {
+  color: var(--text-primary);
+}
+
+.banner {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.employeeProfile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.detailsCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-family: var(--font-editorial);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  text-decoration: none;
+  transition: background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
+}
+
+.profileLink:hover {
+  background-color: var(--surface-card);
+  border-color: var(--border-strong);
+}
+
+@media (max-width: 640px) {
+  .banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actionRow {
+    width: 100%;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 12px;
+  }
+}

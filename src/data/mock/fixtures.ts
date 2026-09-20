@@ -166,41 +166,41 @@ const canonicalEmployees: Employee[] = [
       },
       tasks: [
         {
-          id: 'task-1',
+          id: 'personal-details',
           title: 'Personal details',
           subtitle: 'Submitted by employee · Complete',
           completed: true,
           completedAt: '2026-09-18T14:30:00Z'
         },
         {
-          id: 'task-2',
+          id: 'contract',
           title: 'Contract received',
           subtitle: 'Signed via DocuSign · Complete',
           completed: true,
           completedAt: '2026-09-19T09:15:00Z'
         },
         {
-          id: 'task-3',
+          id: 'equipment',
           title: 'Equipment requested',
           subtitle: 'Hardware dispatched to Paris office · Complete',
           completed: true,
           completedAt: '2026-09-19T16:00:00Z'
         },
         {
-          id: 'task-4',
+          id: 'first-day-plan',
           title: 'First-day plan',
           subtitle: 'Confirmed with Amelia Carter · Complete',
           completed: true,
           completedAt: '2026-09-20T11:00:00Z'
         },
         {
-          id: 'task-5',
+          id: 'accounts',
           title: 'Account provisioned',
           subtitle: 'Awaiting IT security clearance · Incomplete',
           completed: false
         },
         {
-          id: 'task-6',
+          id: 'manager-introduction',
           title: 'Manager introduction',
           subtitle: 'Scheduled for first morning · Incomplete',
           completed: false
@@ -425,12 +425,12 @@ export function generateDeterministicEmployees(): Employee[] {
         totalTasks: 6,
         completedTasks: completedCount,
         tasks: [
-          { id: `t1-${i}`, title: 'Personal details', subtitle: 'Submitted by employee · Complete', completed: true },
-          { id: `t2-${i}`, title: 'Contract received', subtitle: 'Signed via DocuSign · Complete', completed: true },
-          { id: `t3-${i}`, title: 'Equipment requested', subtitle: 'Hardware dispatched · Complete', completed: completedCount >= 3 },
-          { id: `t4-${i}`, title: 'First-day plan', subtitle: 'Confirmed with manager', completed: completedCount >= 4 },
-          { id: `t5-${i}`, title: 'Account provisioned', subtitle: 'IT clearance', completed: completedCount >= 5 },
-          { id: `t6-${i}`, title: 'Manager introduction', subtitle: 'Scheduled for first day', completed: completedCount >= 6 }
+          { id: 'personal-details', title: 'Personal details', subtitle: 'Submitted by employee · Complete', completed: true },
+          { id: 'contract', title: 'Contract received', subtitle: 'Signed via DocuSign · Complete', completed: true },
+          { id: 'equipment', title: 'Equipment requested', subtitle: 'Hardware dispatched · Complete', completed: completedCount >= 3 },
+          { id: 'accounts', title: 'Account provisioned', subtitle: 'IT clearance', completed: completedCount >= 4 },
+          { id: 'manager-introduction', title: 'Manager introduction', subtitle: 'Scheduled for first day', completed: completedCount >= 5 },
+          { id: 'first-day-plan', title: 'First-day plan', subtitle: 'Confirmed with manager', completed: completedCount >= 6 }
         ]
       };
     } else if (contractorsRemaining > 0 && i % 3 === 0) {

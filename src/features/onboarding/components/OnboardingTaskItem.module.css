@@ -1,0 +1,124 @@
+.item {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: border-color var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease);
+}
+
+.item:hover {
+  border-color: var(--border-strong);
+}
+
+.itemCompleted {
+  background-color: var(--surface-subtle);
+}
+
+.checkboxButton {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  cursor: pointer;
+  background-color: var(--surface-card);
+  border: 2px solid var(--border-strong);
+  color: #ffffff;
+  padding: 0;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.checkboxButton:hover:not(:disabled) {
+  border-color: var(--text-primary);
+}
+
+.checkboxButton:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.checkboxButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.checkboxChecked {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.checkboxPending {
+  border-color: #d97706;
+}
+
+.pendingDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: #d97706;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.taskTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.titleCompleted {
+  color: var(--text-primary);
+}
+
+.completedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #065f46;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius-sm);
+  padding: 1px 8px;
+}
+
+.taskSubtitle {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
