@@ -1,0 +1,35 @@
+.marker {
+  display: inline-block;
+  width: 3px;
+  border-radius: var(--radius-xs);
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast);
+}
+
+.active {
+  background-color: var(--status-active-marker);
+}
+
+.onboarding {
+  background-color: var(--status-onboarding-marker);
+}
+
+.leave {
+  background-color: var(--status-leave-marker);
+}
+
+.offboarded {
+  background-color: var(--status-offboarded-marker);
+}
+
+.sizeSm {
+  height: 24px;
+}
+
+.sizeMd {
+  height: 32px;
+}
+
+.sizeLg {
+  height: 48px;
+}

@@ -1,0 +1,154 @@
+.shell {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-app);
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.topNav {
+  height: 54px;
+  width: 100%;
+  background-color: var(--surface-card);
+  border-bottom: 1px solid var(--border-app);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-sizing: border-box;
+}
+
+.navContainer {
+  max-width: 1280px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.leftGroup {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  height: 100%;
+}
+
+.brand {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.brandDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-forest);
+  border-radius: var(--radius-xs);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 100%;
+  list-style: none;
+}
+
+.navItem {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.navLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--text-primary);
+}
+
+.navLink.active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.navLink.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--text-primary);
+}
+
+.userIdentity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.userName {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.userRole {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .navContainer {
+    padding: 0 16px;
+  }
+
+  .leftGroup {
+    gap: 20px;
+  }
+
+  .navLinks {
+    gap: 16px;
+  }
+
+  .userDetails {
+    display: none;
+  }
+}

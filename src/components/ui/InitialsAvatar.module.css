@@ -1,0 +1,32 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--surface-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.sizeSm {
+  width: 24px;
+  height: 24px;
+  font-size: 0.6875rem;
+  border-radius: var(--radius-sm);
+}
+
+.sizeMd {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8125rem;
+}
+
+.sizeLg {
+  width: 56px;
+  height: 56px;
+  font-size: 1.25rem;
+  border-radius: var(--radius-lg);
+}

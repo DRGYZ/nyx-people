@@ -1,0 +1,31 @@
+.container {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  box-sizing: border-box;
+}
+
+.tableView {
+  display: block;
+}
+
+.mobileView {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px 48px;
+    overflow-x: hidden;
+  }
+
+  .tableView {
+    display: none;
+  }
+
+  .mobileView {
+    display: block;
+    width: 100%;
+  }
+}

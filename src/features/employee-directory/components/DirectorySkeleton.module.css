@@ -1,0 +1,36 @@
+.skeletonTable {
+  width: 100%;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.thead {
+  height: 40px;
+  background-color: var(--surface-subtle);
+  border-bottom: 1px solid var(--border-app);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 24px;
+}
+
+.thItem {
+  height: 12px;
+  background-color: var(--border-subtle);
+  border-radius: var(--radius-xs);
+}
+
+.row {
+  height: 56px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 24px;
+}
+
+.row:last-child {
+  border-bottom: none;
+}

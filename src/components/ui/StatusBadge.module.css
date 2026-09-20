@@ -1,0 +1,59 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* Active */
+.active {
+  background-color: var(--status-active-bg);
+  color: var(--status-active-text);
+  border-color: var(--status-active-border);
+}
+.active .dot {
+  background-color: var(--status-active-dot);
+}
+
+/* Onboarding */
+.onboarding {
+  background-color: var(--status-onboarding-bg);
+  color: var(--status-onboarding-text);
+  border-color: var(--status-onboarding-border);
+}
+.onboarding .dot {
+  background-color: var(--status-onboarding-dot);
+}
+
+/* Leave */
+.leave {
+  background-color: var(--status-leave-bg);
+  color: var(--status-leave-text);
+  border-color: var(--status-leave-border);
+}
+.leave .dot {
+  background-color: var(--status-leave-dot);
+}
+
+/* Offboarded */
+.offboarded {
+  background-color: var(--status-offboarded-bg);
+  color: var(--status-offboarded-text);
+  border-color: var(--status-offboarded-border);
+}
+.offboarded .dot {
+  background-color: var(--status-offboarded-dot);
+}

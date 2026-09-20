@@ -1,0 +1,110 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  margin-top: 8px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.rangeText {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.controlsRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pageSizeGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.pageButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageButton {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pageButton:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.pageButton.active {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-color: var(--text-primary);
+  background-color: var(--surface-card);
+}
+
+.navButton {
+  height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.navButton:hover:not(:disabled) {
+  color: var(--text-primary);
+  background-color: var(--surface-hover);
+}
+
+.navButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ellipsis {
+  padding: 0 4px;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .controlsRight {
+    justify-content: center;
+    width: 100%;
+  }
+}

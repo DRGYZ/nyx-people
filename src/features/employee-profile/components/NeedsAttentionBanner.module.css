@@ -1,0 +1,43 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background-color: var(--status-onboarding-bg);
+  border: 1px solid var(--status-onboarding-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 32px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flagIcon {
+  color: var(--status-onboarding-text);
+  flex-shrink: 0;
+}
+
+.text {
+  font-size: 0.8125rem;
+  color: var(--status-onboarding-text);
+  line-height: 1.4;
+}
+
+.bold {
+  font-weight: 600;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--status-onboarding-text);
+  white-space: nowrap;
+}

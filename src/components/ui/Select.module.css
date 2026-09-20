@@ -1,0 +1,111 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast);
+}
+
+.trigger:hover {
+  border-color: var(--border-strong);
+}
+
+.trigger:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--border-focus);
+}
+
+.triggerIcon {
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  transition: transform var(--transition-fast);
+}
+
+.trigger[data-state="open"] .triggerIcon {
+  transform: rotate(180deg);
+}
+
+.content {
+  overflow: hidden;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  padding: 4px;
+  min-width: 140px;
+  z-index: 100;
+  animation: fadeIn 120ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.viewport {
+  padding: 2px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  transition: background-color var(--transition-fast);
+}
+
+.item[data-highlighted] {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.item[data-state="checked"] {
+  font-weight: 500;
+  color: var(--accent-forest);
+}
+
+.itemIndicator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-forest);
+  margin-left: 8px;
+}
+
+.label {
+  padding: 4px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+
+.separator {
+  height: 1px;
+  background-color: var(--border-subtle);
+  margin: 4px 0;
+}

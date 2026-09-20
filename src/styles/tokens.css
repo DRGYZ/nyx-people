@@ -1,0 +1,81 @@
+:root {
+  /* Surface Colors */
+  --surface-app: #FAF8F5;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #F5F2EB;
+  --surface-muted: #EFECE4;
+  --surface-hover: #F2EFE8;
+  --surface-active: #EAE6DD;
+  --surface-elevated: #FFFFFF;
+
+  /* Border / Divider Colors */
+  --border-app: #E5E0D6;
+  --border-subtle: #ECE8DF;
+  --border-strong: #C5BFB3;
+  --border-focus: #1B4332;
+
+  /* Text Colors (Meeting WCAG 2.2 AA Contrast >= 4.5:1 on #FAF8F5) */
+  --text-primary: #181F1C;     /* ~14:1 contrast */
+  --text-secondary: #4A564F;   /* ~7.2:1 contrast */
+  --text-tertiary: #5A665F;    /* ~5.4:1 contrast */
+  --text-inverse: #FAF8F5;
+  --text-link: #1B4332;
+
+  /* Brand / Accent: Forest Green */
+  --accent-forest: #1B4332;
+  --accent-forest-hover: #143527;
+  --accent-forest-active: #0E261C;
+  --accent-forest-subtle: #EBF2EE;
+  --accent-forest-border: #A3C2B3;
+  --accent-forest-text: #1B4332;
+
+  /* Lifecycle / Status: Active */
+  --status-active-marker: #2D6A4F;
+  --status-active-dot: #16A34A;
+  --status-active-text: #166534;
+  --status-active-bg: #EBF5EE;
+  --status-active-border: #C6E7D2;
+
+  /* Lifecycle / Status: Onboarding / Amber */
+  --status-onboarding-marker: #D97706;
+  --status-onboarding-dot: #EA580C;
+  --status-onboarding-text: #8A2E0F; /* High-contrast text for WCAG AA */
+  --status-onboarding-bg: #FEF3C7;
+  --status-onboarding-border: #FDE68A;
+
+  /* Lifecycle / Status: Leave / Gray */
+  --status-leave-marker: #6B7280;
+  --status-leave-dot: #6B7280;
+  --status-leave-text: #374151;
+  --status-leave-bg: #F3F4F6;
+  --status-leave-border: #E5E7EB;
+
+  /* Lifecycle / Status: Offboarded */
+  --status-offboarded-marker: #9CA3AF;
+  --status-offboarded-dot: #9CA3AF;
+  --status-offboarded-text: #4B5563;
+  --status-offboarded-bg: #F3F4F6;
+  --status-offboarded-border: #E5E7EB;
+
+  /* Typography Stacks */
+  --font-editorial: "Newsreader", "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+
+  /* Border Radius */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* Spatial Shadows (Overlays Only) */
+  --shadow-sm: 0 1px 2px 0 rgba(24, 31, 28, 0.05);
+  --shadow-dropdown: 0 4px 16px -2px rgba(24, 31, 28, 0.08), 0 2px 4px -1px rgba(24, 31, 28, 0.04);
+  --shadow-popover: 0 10px 25px -3px rgba(24, 31, 28, 0.1), 0 4px 6px -2px rgba(24, 31, 28, 0.05);
+
+  /* Transitions */
+  --transition-fast: 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
