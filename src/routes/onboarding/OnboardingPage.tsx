@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { OnboardingTab } from '@/domain/onboarding';
 import { GetOnboardingListResponse } from '@/data/contracts';
@@ -10,46 +10,89 @@ import { OnboardingEmptyState } from '@/features/onboarding/components/Onboardin
 import { Skeleton } from '@/components/ui/Skeleton';
 import styles from './OnboardingPage.module.css';
 
+const VALID_ONBOARDING_TABS: readonly OnboardingTab[] = [
+  'all',
+  'attention',
+  'starting-soon',
+  'complete',
+];
+
 export const OnboardingPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Support both ?view= and ?tab=, defaulting to 'all'
-  const currentTab = (searchParams.get('view') || searchParams.get('tab') || 'all') as OnboardingTab;
-  const validTab: OnboardingTab = ['all', 'attention', 'starting-soon', 'complete'].includes(currentTab)
-    ? currentTab
+  // Resolve valid tab
+  const rawView = searchParams.get('view');
+  const rawTab = searchParams.get('tab');
+  const requestedTab = (rawView || rawTab || 'all') as OnboardingTab;
+  const validTab: OnboardingTab = VALID_ONBOARDING_TABS.includes(requestedTab)
+    ? requestedTab
     : 'all';
+
+  // Canonicalize malformed view / legacy ?tab= in URL
+  useEffect(() => {
+    const isLegacyTab = searchParams.has('tab');
+    const isInvalidView = rawView !== null && !VALID_ONBOARDING_TABS.includes(rawView as any);
+    const isDefaultWithView = rawView === 'all';
+
+    if (isLegacyTab || isInvalidView || isDefaultWithView) {
+      const canonical = new URLSearchParams();
+      if (validTab !== 'all') {
+        canonical.set('view', validTab);
+      }
+      setSearchParams(canonical, { replace: true });
+    }
+  }, [rawView, searchParams, validTab, setSearchParams]);
 
   const [data, setData] = useState<GetOnboardingListResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Request race guard
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const loadData = async (tabToLoad: OnboardingTab) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsLoading(true);
     setError(null);
+
     try {
-      const res = await fetchOnboardingList(tabToLoad);
-      setData(res);
+      const res = await fetchOnboardingList(tabToLoad, controller.signal);
+      if (abortControllerRef.current === controller) {
+        setData(res);
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to load onboarding workflows');
+      if (abortControllerRef.current === controller && err?.name !== 'AbortError') {
+        setError(err.message || 'Failed to load onboarding workflows');
+      }
     } finally {
-      setIsLoading(false);
+      if (abortControllerRef.current === controller) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     loadData(validTab);
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [validTab]);
 
   const handleTabChange = (nextTab: OnboardingTab) => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (nextTab === 'all') {
-      nextParams.delete('view');
-      nextParams.delete('tab');
-    } else {
+    const nextParams = new URLSearchParams();
+    if (nextTab !== 'all') {
       nextParams.set('view', nextTab);
-      nextParams.delete('tab');
     }
-    setSearchParams(nextParams);
+    // Deliberate tab selection -> PUSH to browser history
+    setSearchParams(nextParams, { replace: false });
   };
 
   return (
@@ -99,9 +142,9 @@ export const OnboardingPage: React.FC = () => {
           {data.data.length === 0 ? (
             <OnboardingEmptyState tab={validTab} onResetToAll={() => handleTabChange('all')} />
           ) : (
-            <div className={styles.cardsList} role="feed" aria-label="Onboarding employee list">
-              {data.data.map((summary) => (
-                <OnboardingCard key={summary.employee.id} summary={summary} />
+            <div className={styles.cardGrid}>
+              {data.data.map((item) => (
+                <OnboardingCard key={item.employee.id} summary={item} />
               ))}
             </div>
           )}

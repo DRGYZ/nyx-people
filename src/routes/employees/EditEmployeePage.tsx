@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Employee, EmployeeCreateInput } from '@/domain/employee';
 import { fetchEmployeeById, updateEmployee } from '@/data/api-client';
@@ -12,6 +12,23 @@ import styles from './EditEmployeePage.module.css';
 export const EditEmployeePage: React.FC = () => {
   const { employeeId } = useParams<{ employeeId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Resolve preserved return query string from Directory
+  const returnSearchQuery = useMemo(() => {
+    if (location.state?.returnSearch) {
+      return location.state.returnSearch as string;
+    }
+    const searchParams = new URLSearchParams(location.search);
+    const returnSearch = searchParams.get('returnSearch');
+    if (returnSearch) {
+      return returnSearch;
+    }
+    const rawSearch = location.search.startsWith('?')
+      ? location.search.slice(1)
+      : location.search;
+    return rawSearch;
+  }, [location.search, location.state]);
 
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +66,14 @@ export const EditEmployeePage: React.FC = () => {
     };
   }, [employeeId]);
 
+  const targetId = employeeId || employee?.id;
+  const profilePath = targetId
+    ? `/employees/${targetId}${
+        returnSearchQuery ? `?returnSearch=${encodeURIComponent(returnSearchQuery)}` : ''
+      }`
+    : '/employees';
+  const profileNavOptions = { state: { returnSearch: returnSearchQuery } };
+
   const handleSubmit = async (values: EmployeeCreateInput) => {
     if (!employee) return;
 
@@ -57,7 +82,7 @@ export const EditEmployeePage: React.FC = () => {
 
     try {
       await updateEmployee(employee.id, values);
-      navigate(`/employees/${employee.id}`);
+      navigate(profilePath, profileNavOptions);
     } catch (err: any) {
       setServerError(err.message || 'An unexpected error occurred while updating the employee.');
       setIsSubmitting(false);
@@ -85,7 +110,12 @@ export const EditEmployeePage: React.FC = () => {
           <p className={styles.errorText}>
             {loadError || `Could not find an employee with ID "${employeeId}".`}
           </p>
-          <Button variant="outline" onClick={() => navigate('/employees')}>
+          <Button
+            variant="outline"
+            onClick={() =>
+              navigate(returnSearchQuery ? `/employees?${returnSearchQuery}` : '/employees')
+            }
+          >
             Return to Employees
           </Button>
         </div>
@@ -99,7 +129,8 @@ export const EditEmployeePage: React.FC = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <Link
-          to={`/employees/${employee.id}`}
+          to={profilePath}
+          state={profileNavOptions.state}
           className={styles.backLink}
           aria-label="Return to employee profile"
         >
@@ -119,7 +150,7 @@ export const EditEmployeePage: React.FC = () => {
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         serverError={serverError}
-        onCancel={() => navigate(`/employees/${employee.id}`)}
+        onCancel={() => navigate(profilePath, profileNavOptions)}
       />
     </div>
   );

@@ -50,6 +50,7 @@ export const OnboardingChecklistSection: React.FC<OnboardingChecklistSectionProp
             key={task.id}
             task={task}
             isUpdating={updatingTaskId === task.id}
+            disabled={updatingTaskId !== null}
             onToggle={onToggleTask}
           />
         ))}

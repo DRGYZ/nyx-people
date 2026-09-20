@@ -59,7 +59,13 @@ export const handlers = [
 
     if (!employee) {
       return HttpResponse.json(
-        { error: `Employee with ID '${id}' not found.`, statusCode: 404 },
+        {
+          error: {
+            code: 'NOT_FOUND',
+            message: `Employee with ID '${id}' not found.`,
+          },
+          statusCode: 404,
+        },
         { status: 404 }
       );
     }
@@ -78,17 +84,28 @@ export const handlers = [
       body = await request.json();
     } catch {
       return HttpResponse.json(
-        { error: 'Invalid JSON request body', statusCode: 400 },
+        {
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Invalid JSON request body',
+          },
+          statusCode: 400,
+        },
         { status: 400 }
       );
     }
 
     const parseResult = EmployeeCreateInputSchema.safeParse(body);
     if (!parseResult.success) {
-      const firstIssue = parseResult.error.issues[0]?.message || 'Validation failed';
+      const firstIssue = parseResult.error.issues[0];
+      const field = firstIssue ? firstIssue.path.join('.') : undefined;
       return HttpResponse.json(
         {
-          error: firstIssue,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: firstIssue?.message || 'Validation failed',
+            field,
+          },
           details: parseResult.error.format(),
           statusCode: 400,
         },
@@ -103,7 +120,11 @@ export const handlers = [
       const isConflict = err.message && err.message.toLowerCase().includes('already registered');
       return HttpResponse.json(
         {
-          error: err.message || 'Failed to create employee',
+          error: {
+            code: isConflict ? 'CONFLICT' : 'VALIDATION_ERROR',
+            message: err.message || 'Failed to create employee',
+            field: isConflict ? 'person.email' : undefined,
+          },
           statusCode: isConflict ? 409 : 400,
         },
         { status: isConflict ? 409 : 400 }
@@ -124,17 +145,28 @@ export const handlers = [
       body = await request.json();
     } catch {
       return HttpResponse.json(
-        { error: 'Invalid JSON request body', statusCode: 400 },
+        {
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Invalid JSON request body',
+          },
+          statusCode: 400,
+        },
         { status: 400 }
       );
     }
 
     const parseResult = EmployeeUpdateInputSchema.safeParse(body);
     if (!parseResult.success) {
-      const firstIssue = parseResult.error.issues[0]?.message || 'Validation failed';
+      const firstIssue = parseResult.error.issues[0];
+      const field = firstIssue ? firstIssue.path.join('.') : undefined;
       return HttpResponse.json(
         {
-          error: firstIssue,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: firstIssue?.message || 'Validation failed',
+            field,
+          },
           details: parseResult.error.format(),
           statusCode: 400,
         },
@@ -150,10 +182,15 @@ export const handlers = [
       const isNotFound = message.includes('not found');
       const isConflict = message.toLowerCase().includes('already registered');
       const statusCode = isNotFound ? 404 : isConflict ? 409 : 400;
+      const code = isNotFound ? 'NOT_FOUND' : isConflict ? 'CONFLICT' : 'VALIDATION_ERROR';
 
       return HttpResponse.json(
         {
-          error: message || 'Failed to update employee',
+          error: {
+            code,
+            message: message || 'Failed to update employee',
+            field: isConflict ? 'person.email' : undefined,
+          },
           statusCode,
         },
         { status: statusCode }
@@ -185,7 +222,13 @@ export const handlers = [
 
     if (!plan) {
       return HttpResponse.json(
-        { error: `Onboarding plan for employee '${employeeId}' not found.`, statusCode: 404 },
+        {
+          error: {
+            code: 'NOT_FOUND',
+            message: `Onboarding plan for employee '${employeeId}' not found.`,
+          },
+          statusCode: 404,
+        },
         { status: 404 }
       );
     }
@@ -207,22 +250,43 @@ export const handlers = [
       body = await request.json();
     } catch {
       return HttpResponse.json(
-        { error: 'Invalid JSON request body', statusCode: 400 },
+        {
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Invalid JSON request body',
+          },
+          statusCode: 400,
+        },
         { status: 400 }
       );
     }
 
-    const completed = typeof body.completed === 'boolean' ? body.completed : true;
+    if (!body || typeof body.completed !== 'boolean') {
+      return HttpResponse.json(
+        {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: "Field 'completed' must be a boolean",
+            field: 'completed',
+          },
+          statusCode: 400,
+        },
+        { status: 400 }
+      );
+    }
 
     try {
-      const response = mockStore.updateOnboardingTask(employeeId, taskKey, completed);
+      const response = mockStore.updateOnboardingTask(employeeId, taskKey, body.completed);
       return HttpResponse.json(response);
     } catch (err: any) {
       const message = err.message || '';
       const isNotFound = message.includes('not found');
       return HttpResponse.json(
         {
-          error: message || 'Failed to update onboarding task',
+          error: {
+            code: isNotFound ? 'NOT_FOUND' : 'VALIDATION_ERROR',
+            message: message || 'Failed to update onboarding task',
+          },
           statusCode: isNotFound ? 404 : 400,
         },
         { status: isNotFound ? 404 : 400 }

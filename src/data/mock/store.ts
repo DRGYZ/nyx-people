@@ -269,7 +269,7 @@ export class EmployeeMockStore {
 
     const total = filtered.length;
     const totalPages = Math.ceil(total / pageSize) || 1;
-    const safePage = Math.min(page, totalPages);
+    const safePage = Math.max(1, Math.min(page, totalPages));
     const startIndex = (safePage - 1) * pageSize;
     const paginatedEmployees = filtered
       .slice(startIndex, startIndex + pageSize)

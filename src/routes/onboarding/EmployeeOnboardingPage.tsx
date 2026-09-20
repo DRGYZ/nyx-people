@@ -49,7 +49,7 @@ export const EmployeeOnboardingPage: React.FC = () => {
   }, [employeeId]);
 
   const handleToggleTask = async (taskId: string, newStatus: boolean) => {
-    if (!employeeId || !data) return;
+    if (!employeeId || !data || updatingTaskId !== null) return;
 
     setUpdatingTaskId(taskId);
     setToggleError(null);
@@ -87,26 +87,31 @@ export const EmployeeOnboardingPage: React.FC = () => {
       const res = await updateOnboardingTask(employeeId, taskId, newStatus);
       setData(res);
     } catch (err: any) {
-      // Revert optimistic update
-      setData((prev) => {
-        if (!prev) return prev;
-        const prevCompleted = previousTasks.filter((t) => t.completed).length;
-        return {
-          ...prev,
-          onboarding: {
-            ...prev.onboarding,
-            completedTasks: prevCompleted,
-            tasks: previousTasks,
-          },
-          progress: {
-            ...prev.progress,
-            completed: prevCompleted,
-            remaining: Math.max(0, 6 - prevCompleted),
-            percent: Math.round((prevCompleted / 6) * 100),
-            isComplete: prevCompleted >= 6,
-          },
-        };
-      });
+      try {
+        const authoritative = await fetchOnboardingPlan(employeeId);
+        setData(authoritative);
+      } catch {
+        // Fallback: Revert optimistic update
+        setData((prev) => {
+          if (!prev) return prev;
+          const prevCompleted = previousTasks.filter((t) => t.completed).length;
+          return {
+            ...prev,
+            onboarding: {
+              ...prev.onboarding,
+              completedTasks: prevCompleted,
+              tasks: previousTasks,
+            },
+            progress: {
+              ...prev.progress,
+              completed: prevCompleted,
+              remaining: Math.max(0, 6 - prevCompleted),
+              percent: Math.round((prevCompleted / 6) * 100),
+              isComplete: prevCompleted >= 6,
+            },
+          };
+        });
+      }
       setToggleError(err.message || 'Failed to update task status');
     } finally {
       setUpdatingTaskId(null);
@@ -134,7 +139,7 @@ export const EmployeeOnboardingPage: React.FC = () => {
     );
   }
 
-  if (notFound || !data) {
+  if (notFound || !data || !data.onboarding) {
     return (
       <div className={styles.pageContainer}>
         <div className={styles.notFoundContainer} role="alert">

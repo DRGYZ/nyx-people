@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Employee } from '@/domain/employee';
-import { fetchEmployeeById } from '@/data/api-client';
+import { fetchEmployeeById, isAbortError } from '@/data/api-client';
 
 export function useEmployeeProfile(employeeId: string | undefined) {
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -30,14 +30,18 @@ export function useEmployeeProfile(employeeId: string | undefined) {
 
     try {
       const response = await fetchEmployeeById(employeeId, controller.signal);
-      setEmployee(response.data);
+      if (abortControllerRef.current === controller) {
+        setEmployee(response.data);
+      }
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
+      if (!isAbortError(err) && abortControllerRef.current === controller) {
         setError(err.message || 'We could not load employee profile.');
         setStatusCode(err.statusCode || 500);
       }
     } finally {
-      setLoading(false);
+      if (abortControllerRef.current === controller) {
+        setLoading(false);
+      }
     }
   }, [employeeId]);
 

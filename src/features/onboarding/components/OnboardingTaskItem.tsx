@@ -6,16 +6,18 @@ import styles from './OnboardingTaskItem.module.css';
 interface OnboardingTaskItemProps {
   task: OnboardingTask;
   isUpdating?: boolean;
+  disabled?: boolean;
   onToggle: (taskId: string, newStatus: boolean) => void;
 }
 
 export const OnboardingTaskItem: React.FC<OnboardingTaskItemProps> = ({
   task,
   isUpdating = false,
+  disabled = false,
   onToggle,
 }) => {
   const handleClick = () => {
-    if (isUpdating) return;
+    if (isUpdating || disabled) return;
     onToggle(task.id, !task.completed);
   };
 
@@ -45,7 +47,7 @@ export const OnboardingTaskItem: React.FC<OnboardingTaskItemProps> = ({
         id={`task-checkbox-${task.id}`}
         aria-checked={task.completed}
         aria-labelledby={`task-title-${task.id}`}
-        disabled={isUpdating}
+        disabled={disabled || isUpdating}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         className={`${styles.checkboxButton} ${

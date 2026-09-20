@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { VisibilityState } from '@tanstack/react-table';
 import { useDirectorySearchParams } from '@/features/employee-directory/hooks/useDirectorySearchParams';
 import { useEmployeeDirectory } from '@/features/employee-directory/hooks/useEmployeeDirectory';
@@ -24,6 +24,13 @@ export const EmployeesPage: React.FC = () => {
   } = useDirectorySearchParams();
 
   const { response, loading, error, refetch } = useEmployeeDirectory(queryParams);
+
+  // Automatically clamp out-of-bounds page if total > 0 but page > totalPages
+  useEffect(() => {
+    if (response && response.total > 0 && queryParams.page > response.totalPages) {
+      updateQueryParams({ page: response.totalPages }, { replace: true });
+    }
+  }, [response, queryParams.page, updateQueryParams]);
 
   // Column visibility state (default all true)
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -54,15 +61,15 @@ export const EmployeesPage: React.FC = () => {
 
   const handleSort = (columnId: string) => {
     if (queryParams.sortBy === columnId) {
-      // Toggle asc/desc
+      // Toggle asc/desc (PUSH)
       updateQueryParams({
         sortDir: queryParams.sortDir === 'asc' ? 'desc' : 'asc',
-      });
+      }, { replace: false });
     } else {
       updateQueryParams({
         sortBy: columnId as any,
         sortDir: 'asc',
-      });
+      }, { replace: false });
     }
   };
 
@@ -90,7 +97,7 @@ export const EmployeesPage: React.FC = () => {
       <DirectoryTabs
         activeView={queryParams.view}
         counts={counts}
-        onViewChange={(view) => updateQueryParams({ view }, true)}
+        onViewChange={(view) => updateQueryParams({ view }, { resetPage: true, replace: false })}
       />
 
       <DirectoryToolbar
@@ -114,7 +121,7 @@ export const EmployeesPage: React.FC = () => {
         />
       ) : loading && !response ? (
         <DirectorySkeleton rows={10} />
-      ) : response && response.data.length === 0 ? (
+      ) : response && response.total === 0 ? (
         hasActiveFilters ? (
           <EmptyState
             title="No employees match these filters."
@@ -159,8 +166,8 @@ export const EmployeesPage: React.FC = () => {
             totalPages={response.totalPages}
             totalItems={response.total}
             pageSize={response.pageSize}
-            onPageChange={(page) => updateQueryParams({ page })}
-            onPageSizeChange={(pageSize) => updateQueryParams({ pageSize }, true)}
+            onPageChange={(page) => updateQueryParams({ page }, { replace: false })}
+            onPageSizeChange={(pageSize) => updateQueryParams({ pageSize }, { resetPage: true, replace: false })}
           />
         </>
       ) : null}

@@ -53,7 +53,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
         <div className={styles.actions}>
           <Link
-            to={`/employees/${employee.id}/edit`}
+            to={{
+              pathname: `/employees/${employee.id}/edit`,
+              search: returnSearchQuery ? `?returnSearch=${encodeURIComponent(returnSearchQuery)}` : '',
+            }}
+            state={{ returnSearch: returnSearchQuery }}
             className={`${buttonStyles.button} ${buttonStyles.outline} ${buttonStyles.sizeMd}`}
             aria-label={`Edit ${fullName}`}
           >

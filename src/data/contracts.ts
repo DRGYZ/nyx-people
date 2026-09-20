@@ -15,9 +15,23 @@ export interface GetEmployeeByIdResponse {
   data: Employee;
 }
 
+export type ApiErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'PERSISTENCE_ERROR'
+  | 'INVALID_REQUEST';
+
+export interface ApiErrorDetail {
+  code: ApiErrorCode;
+  message: string;
+  field?: string;
+}
+
 export interface ApiErrorResponse {
-  error: string;
+  error: string | ApiErrorDetail;
   statusCode: number;
+  details?: unknown;
 }
 
 export type GetEmployeesParams = Partial<DirectoryQueryParams>;

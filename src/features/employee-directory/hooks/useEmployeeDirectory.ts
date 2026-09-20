@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { GetEmployeesResponse } from '@/data/contracts';
-import { fetchEmployees } from '@/data/api-client';
+import { fetchEmployees, isAbortError } from '@/data/api-client';
 import { DirectoryQueryParams } from '@/domain/schemas';
 
 export function useEmployeeDirectory(params: DirectoryQueryParams) {
@@ -23,13 +23,17 @@ export function useEmployeeDirectory(params: DirectoryQueryParams) {
 
     try {
       const result = await fetchEmployees(params, controller.signal);
-      setResponse(result);
+      if (abortControllerRef.current === controller) {
+        setResponse(result);
+      }
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
+      if (!isAbortError(err) && abortControllerRef.current === controller) {
         setError(err.message || 'We could not load employees.');
       }
     } finally {
-      setLoading(false);
+      if (abortControllerRef.current === controller) {
+        setLoading(false);
+      }
     }
   }, [
     params.q,

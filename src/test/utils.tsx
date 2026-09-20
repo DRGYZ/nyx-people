@@ -9,6 +9,7 @@ import { EditEmployeePage } from '@/routes/employees/EditEmployeePage';
 import { OnboardingPage } from '@/routes/onboarding/OnboardingPage';
 import { EmployeeOnboardingPage } from '@/routes/onboarding/EmployeeOnboardingPage';
 import { OverviewPage } from '@/routes/overview/OverviewPage';
+import { NotFoundPage } from '@/routes/not-found/NotFoundPage';
 
 interface RenderWithRouterOptions extends Omit<RenderOptions, 'wrapper'> {
   initialEntries?: string[];
@@ -37,6 +38,7 @@ export function renderWithRouter(
             { path: 'employees/:employeeId/edit', element: <EditEmployeePage /> },
             { path: 'employees/:employeeId/onboarding', element: <EmployeeOnboardingPage /> },
             { path: 'onboarding', element: <OnboardingPage /> },
+            { path: '*', element: <NotFoundPage /> },
           ],
         },
       ];

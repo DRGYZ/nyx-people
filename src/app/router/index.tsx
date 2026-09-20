@@ -8,6 +8,7 @@ import { OnboardingPage } from '@/routes/onboarding/OnboardingPage';
 import { EmployeeOnboardingPage } from '@/routes/onboarding/EmployeeOnboardingPage';
 
 import { OverviewPage } from '@/routes/overview/OverviewPage';
+import { NotFoundPage } from '@/routes/not-found/NotFoundPage';
 
 export const router = createBrowserRouter([
   {
@@ -48,7 +49,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '*',
-        element: <Navigate to="/overview" replace />,
+        element: <NotFoundPage />,
       },
     ],
   },

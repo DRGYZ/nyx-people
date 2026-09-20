@@ -11,16 +11,49 @@ import {
   GetOnboardingPlanResponse,
   UpdateOnboardingTaskResponse,
   GetOverviewResponse,
+  ApiErrorCode,
 } from './contracts';
 
 export class ApiError extends Error {
   public statusCode: number;
+  public code?: ApiErrorCode;
+  public field?: string;
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number, code?: ApiErrorCode, field?: string) {
     super(message);
     this.name = 'ApiError';
     this.statusCode = statusCode;
+    this.code = code;
+    this.field = field;
   }
+}
+
+export function isAbortError(err: unknown): boolean {
+  return (
+    (err instanceof DOMException && err.name === 'AbortError') ||
+    (err instanceof Error && err.name === 'AbortError')
+  );
+}
+
+export async function parseApiError(response: Response, defaultMessage: string): Promise<ApiError> {
+  let errorMessage = `${defaultMessage} (${response.status})`;
+  let errorCode: ApiErrorCode | undefined;
+  let errorField: string | undefined;
+
+  try {
+    const errorJson = (await response.json()) as ApiErrorResponse;
+    if (typeof errorJson.error === 'string') {
+      errorMessage = errorJson.error;
+    } else if (errorJson.error && typeof errorJson.error === 'object') {
+      errorMessage = errorJson.error.message || errorMessage;
+      errorCode = errorJson.error.code;
+      errorField = errorJson.error.field;
+    }
+  } catch {
+    // ignore
+  }
+
+  return new ApiError(errorMessage, response.status, errorCode, errorField);
 }
 
 export async function fetchEmployees(
@@ -50,14 +83,7 @@ export async function fetchEmployees(
   const response = await fetch(url, options);
 
   if (!response.ok) {
-    let errorMessage = `Failed to fetch employees (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, 'Failed to fetch employees');
   }
 
   return response.json();
@@ -76,14 +102,7 @@ export async function fetchEmployeeById(
   const response = await fetch(`/api/employees/${encodeURIComponent(id)}`, options);
 
   if (!response.ok) {
-    let errorMessage = `Failed to fetch employee ${id} (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, `Failed to fetch employee ${id}`);
   }
 
   return response.json();
@@ -108,14 +127,7 @@ export async function createEmployee(
   const response = await fetch('/api/employees', options);
 
   if (!response.ok) {
-    let errorMessage = `Failed to create employee (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, 'Failed to create employee');
   }
 
   return response.json();
@@ -141,14 +153,7 @@ export async function updateEmployee(
   const response = await fetch(`/api/employees/${encodeURIComponent(id)}`, options);
 
   if (!response.ok) {
-    let errorMessage = `Failed to update employee ${id} (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, `Failed to update employee ${id}`);
   }
 
   return response.json();
@@ -171,7 +176,7 @@ export async function fetchManagers(
   const response = await fetch(`/api/managers?${params.toString()}`, options);
 
   if (!response.ok) {
-    throw new ApiError(`Failed to fetch managers (${response.status})`, response.status);
+    throw await parseApiError(response, 'Failed to fetch managers');
   }
 
   const result = (await response.json()) as GetManagersResponse;
@@ -190,14 +195,7 @@ export async function fetchOnboardingList(
   const response = await fetch(`/api/onboarding?tab=${encodeURIComponent(tab)}`, options);
 
   if (!response.ok) {
-    let errorMessage = `Failed to fetch onboarding list (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, 'Failed to fetch onboarding list');
   }
 
   return response.json();
@@ -215,14 +213,7 @@ export async function fetchOnboardingPlan(
   const response = await fetch(`/api/onboarding/${encodeURIComponent(employeeId)}`, options);
 
   if (!response.ok) {
-    let errorMessage = `Failed to fetch onboarding plan for ${employeeId} (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, `Failed to fetch onboarding plan for ${employeeId}`);
   }
 
   return response.json();
@@ -252,14 +243,7 @@ export async function updateOnboardingTask(
   );
 
   if (!response.ok) {
-    let errorMessage = `Failed to update task ${taskKey} (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, `Failed to update task ${taskKey}`);
   }
 
   return response.json();
@@ -276,14 +260,7 @@ export async function fetchOverview(
   const response = await fetch('/api/overview', options);
 
   if (!response.ok) {
-    let errorMessage = `Failed to fetch overview (${response.status})`;
-    try {
-      const errorJson = (await response.json()) as ApiErrorResponse;
-      if (errorJson.error) errorMessage = errorJson.error;
-    } catch {
-      // ignore
-    }
-    throw new ApiError(errorMessage, response.status);
+    throw await parseApiError(response, 'Failed to fetch overview');
   }
 
   return response.json();

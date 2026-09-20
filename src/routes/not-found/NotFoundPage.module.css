@@ -1,0 +1,105 @@
+.container {
+  min-height: calc(100vh - 54px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  box-sizing: border-box;
+}
+
+.card {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-app);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.errorCode {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  background-color: var(--surface-hover);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 28px 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--accent-forest, #1e3a2f);
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.primaryLink:hover {
+  opacity: 0.9;
+}
+
+.primaryLink:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.secondaryLink:hover {
+  background-color: var(--surface-hover);
+}
+
+.secondaryLink:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
