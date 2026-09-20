@@ -36,7 +36,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div>
             <div className={styles.nameStatusRow}>
               <h1 className={styles.name}>{fullName}</h1>
-              <StatusBadge status={employment.status} showDot={false} />
+              <StatusBadge status={employment.status} />
             </div>
 
             <div className={styles.subtitle}>

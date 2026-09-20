@@ -21,14 +21,8 @@ describe('OnboardingPage Integration', () => {
 
     // Subtitle
     expect(
-      screen.getByText(/Operational cohort tracking, readiness milestones, and task completion workflows/)
+      screen.getByText(/Track new starters and remaining onboarding tasks/)
     ).toBeInTheDocument();
-
-    // Metric cards
-    expect(screen.getByText('Total Pipeline')).toBeInTheDocument();
-    expect(screen.getByText('Needs Attention')).toBeInTheDocument();
-    expect(screen.getByText('Starting Soon')).toBeInTheDocument();
-    expect(screen.getByText('Day-One Ready')).toBeInTheDocument();
 
     // Filter tabs
     expect(screen.getByRole('tab', { name: /all onboardings/i })).toBeInTheDocument();
@@ -36,11 +30,10 @@ describe('OnboardingPage Integration', () => {
     expect(screen.getByRole('tab', { name: /starting soon/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /complete/i })).toBeInTheDocument();
 
-    // Verify Noah Williams card is rendered
+    // Verify Noah Williams row is rendered
     expect(screen.getByText('Noah Williams')).toBeInTheDocument();
-    expect(screen.getAllByText('4 of 6 complete').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Account provisioned').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Manager introduction').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('4 / 6 complete').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/2 tasks remaining/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('filters employees by tab selection', async () => {

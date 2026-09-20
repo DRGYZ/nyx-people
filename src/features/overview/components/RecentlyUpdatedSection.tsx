@@ -23,42 +23,40 @@ export const RecentlyUpdatedSection: React.FC<RecentlyUpdatedSectionProps> = ({ 
           <span>No recent employee updates recorded.</span>
         </div>
       ) : (
-        <div className={styles.containerCard}>
-          <ul className={styles.list} aria-label="Recently updated employee records">
-            {items.map((item) => {
-              const initials = item.name
-                .split(' ')
-                .map((part) => part[0] || '')
-                .join('')
-                .slice(0, 2)
-                .toUpperCase();
+        <ul className={styles.list} aria-label="Recently updated employee records">
+          {items.map((item) => {
+            const initials = item.name
+              .split(' ')
+              .map((part) => part[0] || '')
+              .join('')
+              .slice(0, 2)
+              .toUpperCase();
 
-              return (
-                <li key={item.id} className={styles.row}>
-                  <div className={styles.mainInfo}>
-                    <InitialsAvatar initials={initials} size="sm" />
-                    <div className={styles.detailsCol}>
-                      <div className={styles.nameRow}>
-                        <Link
-                          to={`/employees/${item.id}`}
-                          className={styles.employeeName}
-                        >
-                          {item.name}
-                        </Link>
-                        <DepartmentBadge department={item.department} />
-                      </div>
-                      <span className={styles.roleDept}>{item.jobTitle}</span>
+            return (
+              <li key={item.id} className={styles.row}>
+                <div className={styles.mainInfo}>
+                  <InitialsAvatar initials={initials} size="sm" />
+                  <div className={styles.detailsCol}>
+                    <div className={styles.nameRow}>
+                      <Link
+                        to={`/employees/${item.id}`}
+                        className={styles.employeeName}
+                      >
+                        {item.name}
+                      </Link>
+                      <DepartmentBadge department={item.department} />
                     </div>
+                    <span className={styles.roleDept}>{item.jobTitle}</span>
                   </div>
+                </div>
 
-                  <div className={styles.timeCol}>
-                    <span className={styles.timePill}>{item.relativeUpdated}</span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+                <div className={styles.timeCol}>
+                  <span className={`${styles.timeText} tabular-nums`}>{item.relativeUpdated}</span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </section>
   );

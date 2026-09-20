@@ -19,40 +19,24 @@
 }
 
 .sectionCard {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-app);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-app);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .sectionTitle {
-  font-family: var(--font-serif);
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-family: var(--font-editorial);
+  font-size: 1.25rem;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0;
-}
-
-.sectionTag {
-  font-family: var(--font-sans);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  background-color: var(--surface-hover);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-app);
 }
 
 .grid2 {
@@ -133,10 +117,6 @@
 }
 
 @media (max-width: 768px) {
-  .sectionCard {
-    padding: 16px;
-  }
-
   .grid2,
   .grid3 {
     grid-template-columns: 1fr;

@@ -58,9 +58,7 @@ export const OnboardingTaskItem: React.FC<OnboardingTaskItemProps> = ({
           <Loader2 size={13} className={styles.spinner} aria-hidden="true" />
         ) : task.completed ? (
           <Check size={14} strokeWidth={3} aria-hidden="true" />
-        ) : (
-          <span className={styles.pendingDot} aria-hidden="true" />
-        )}
+        ) : null}
       </button>
 
       <div className={styles.content}>
@@ -73,9 +71,8 @@ export const OnboardingTaskItem: React.FC<OnboardingTaskItemProps> = ({
           </span>
 
           {task.completed && (
-            <span className={styles.completedBadge}>
-              <Check size={10} strokeWidth={3} aria-hidden="true" />
-              <span>Completed{formattedDate ? ` ${formattedDate}` : ''}</span>
+            <span className={`${styles.completedText} tabular-nums`}>
+              Completed{formattedDate ? ` ${formattedDate}` : ''}
             </span>
           )}
         </div>

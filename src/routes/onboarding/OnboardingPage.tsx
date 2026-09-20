@@ -97,7 +97,7 @@ export const OnboardingPage: React.FC = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <OnboardingHeader counts={data?.counts} />
+      <OnboardingHeader />
 
       {data && (
         <OnboardingTabs
@@ -142,7 +142,7 @@ export const OnboardingPage: React.FC = () => {
           {data.data.length === 0 ? (
             <OnboardingEmptyState tab={validTab} onResetToAll={() => handleTabChange('all')} />
           ) : (
-            <div className={styles.cardGrid}>
+            <div className={styles.list} aria-label="Onboarding employee workflows">
               {data.data.map((item) => (
                 <OnboardingCard key={item.employee.id} summary={item} />
               ))}

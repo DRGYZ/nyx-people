@@ -13,9 +13,9 @@ describe('Employee Create Flow Integration', () => {
     renderWithRouter(undefined, { initialEntries: ['/employees/new'] });
 
     expect(screen.getByRole('heading', { name: /add new employee/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /personal details/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /personal information/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /contact & location/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /employment details/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /employment/i })).toBeInTheDocument();
 
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();

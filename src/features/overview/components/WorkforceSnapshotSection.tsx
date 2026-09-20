@@ -18,62 +18,46 @@ export const WorkforceSnapshotSection: React.FC<WorkforceSnapshotSectionProps> =
         </h2>
       </div>
 
-      <div className={styles.containerCard}>
-        <div className={styles.metricsGrid} role="region" aria-label="Workforce metrics">
+      <div className={styles.summaryContainer} role="region" aria-label="Workforce metrics">
+        <div className={styles.summaryRow}>
           <Link
             to="/employees"
-            className={styles.metricTile}
+            className={styles.summaryLink}
             aria-label={`Total headcount: ${snapshot.totalEmployees} employees. View employee directory.`}
           >
-            <span className={styles.metricLabel}>Total Headcount</span>
-            <div className={styles.metricValueRow}>
-              <span className={`${styles.metricValue} tabular-nums`}>{snapshot.totalEmployees}</span>
-              <span className={styles.metricSub}>total</span>
-            </div>
+            <span className={`${styles.count} tabular-nums`}>{snapshot.totalEmployees}</span>
+            <span className={styles.label}>employees</span>
           </Link>
+          <span className={styles.dot} aria-hidden="true">·</span>
 
           <Link
             to="/onboarding"
-            className={styles.metricTile}
+            className={styles.summaryLink}
             aria-label={`In onboarding: ${snapshot.onboardingCount} employees. View onboarding workspace.`}
           >
-            <span className={styles.metricLabel}>In Onboarding</span>
-            <div className={styles.metricValueRow}>
-              <span className={`${styles.metricValue} tabular-nums`}>{snapshot.onboardingCount}</span>
-              <span className={styles.metricSub}>pipeline</span>
-            </div>
+            <span className={`${styles.count} tabular-nums`}>{snapshot.onboardingCount}</span>
+            <span className={styles.label}>onboarding</span>
           </Link>
+          <span className={styles.dot} aria-hidden="true">·</span>
 
           <Link
             to="/employees"
-            className={styles.metricTile}
+            className={styles.summaryLink}
             aria-label={`Departments: ${snapshot.departmentCount} active teams. View employee directory.`}
           >
-            <span className={styles.metricLabel}>Departments</span>
-            <div className={styles.metricValueRow}>
-              <span className={`${styles.metricValue} tabular-nums`}>{snapshot.departmentCount}</span>
-              <span className={styles.metricSub}>teams</span>
-            </div>
+            <span className={`${styles.count} tabular-nums`}>{snapshot.departmentCount}</span>
+            <span className={styles.label}>departments</span>
           </Link>
+          <span className={styles.dot} aria-hidden="true">·</span>
 
           <Link
             to="/employees?employmentType=contractor"
-            className={styles.metricTile}
+            className={styles.summaryLink}
             aria-label={`Contractors: ${snapshot.contractorCount} active contractors. View contractor directory.`}
           >
-            <span className={styles.metricLabel}>Contractors</span>
-            <div className={styles.metricValueRow}>
-              <span className={`${styles.metricValue} tabular-nums`}>{snapshot.contractorCount}</span>
-              <span className={styles.metricSub}>external</span>
-            </div>
+            <span className={`${styles.count} tabular-nums`}>{snapshot.contractorCount}</span>
+            <span className={styles.label}>contractors</span>
           </Link>
-        </div>
-
-        <div className={styles.summaryRow}>
-          <span className="tabular-nums">
-            {snapshot.totalEmployees} employees · {snapshot.onboardingCount} onboarding ·{' '}
-            {snapshot.departmentCount} departments · {snapshot.contractorCount} contractors
-          </span>
         </div>
       </div>
     </section>

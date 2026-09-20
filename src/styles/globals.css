@@ -67,6 +67,12 @@ button {
   outline-offset: 2px;
 }
 
+/* Suppress outline on programmatic route focus targets while retaining keyboard focus-visible */
+[tabindex="-1"]:focus:not(:focus-visible),
+h1[tabindex="-1"]:focus {
+  outline: none;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

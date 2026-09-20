@@ -19,12 +19,10 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({
         <h2 id="onboarding-heading" className={styles.title}>
           Onboarding
         </h2>
-        <span className={`${styles.progressBadge} tabular-nums`}>
+        <span className={`${styles.progressText} tabular-nums`}>
           {onboarding.completedTasks} of {onboarding.totalTasks} complete
         </span>
       </div>
-
-      <p className={styles.subtitle}>Progress toward day-one readiness</p>
 
       <div className={styles.separator} aria-hidden="true" />
 
@@ -51,13 +49,6 @@ export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({
           </div>
         ))}
       </div>
-
-      {onboarding.responsiblePartner && (
-        <div className={styles.partnerCard}>
-          <span className={styles.partnerLabel}>Responsible Partner</span>
-          <p className={styles.partnerNote}>{onboarding.responsiblePartner.note}</p>
-        </div>
-      )}
 
       {employeeId && (
         <div className={styles.actionFooter}>

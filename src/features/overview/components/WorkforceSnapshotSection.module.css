@@ -8,7 +8,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
 }
 
 .sectionTitle {
@@ -19,80 +18,49 @@
   margin: 0;
 }
 
-.containerCard {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-app);
-  border-radius: var(--radius-md);
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.summaryContainer {
+  padding: 8px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.metricsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.summaryRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
+  font-size: 0.875rem;
 }
 
-.metricTile {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 12px;
-  background-color: var(--surface-subtle);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+.summaryLink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
   text-decoration: none;
-  transition: border-color var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
 }
 
-.metricTile:hover {
-  background-color: var(--surface-card);
-  border-color: var(--border-strong);
+.summaryLink:hover {
+  color: var(--text-primary);
 }
 
-.metricTile:focus-visible {
+.summaryLink:focus-visible {
   outline: 2px solid var(--text-primary);
   outline-offset: 2px;
 }
 
-.metricLabel {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-tertiary);
-}
-
-.metricValueRow {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.metricValue {
-  font-size: 1.25rem;
+.count {
   font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.2;
+  font-size: 0.9375rem;
 }
 
-.metricSub {
-  font-size: 0.75rem;
+.label {
   color: var(--text-secondary);
 }
 
-.summaryRow {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 10px;
-  line-height: 1.4;
-}
-
-@media (max-width: 480px) {
-  .metricsGrid {
-    grid-template-columns: 1fr;
-  }
+.dot {
+  color: var(--border-strong);
+  user-select: none;
 }

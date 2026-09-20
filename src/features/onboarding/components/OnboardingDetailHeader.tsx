@@ -42,8 +42,6 @@ export const OnboardingDetailHeader: React.FC<OnboardingDetailHeaderProps> = ({
               <span>{employee.employment.location}</span>
               <span>·</span>
               <span>Starts {employee.employment.startDate} ({urgency})</span>
-              <span>·</span>
-              <span className="tabular-nums">Ref: {employee.id}</span>
             </div>
           </div>
         </div>

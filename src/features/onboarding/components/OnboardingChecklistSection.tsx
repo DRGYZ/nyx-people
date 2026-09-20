@@ -22,11 +22,8 @@ export const OnboardingChecklistSection: React.FC<OnboardingChecklistSectionProp
     <section className={styles.section} aria-labelledby="checklist-heading">
       <div className={styles.header}>
         <h2 id="checklist-heading" className={styles.title}>
-          Operational Readiness Tasks
+          Tasks
         </h2>
-        <p className={styles.subtitle}>
-          Standardized 6-task checklist required for every new hire before or during day one.
-        </p>
       </div>
 
       {errorMessage && (

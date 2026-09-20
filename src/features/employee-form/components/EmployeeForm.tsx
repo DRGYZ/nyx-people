@@ -31,10 +31,9 @@ interface EmployeeFormProps {
   mode: 'create' | 'edit';
 }
 
-const FIELD_LABELS: Record<keyof EmployeeFormValues, string> = {
+const FIELD_LABELS: Record<string, string> = {
   firstName: 'First name',
   lastName: 'Last name',
-  preferredName: 'Preferred name',
   email: 'Work email',
   phone: 'Phone number',
   dateOfBirth: 'Date of birth',
@@ -99,7 +98,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const defaultValues: EmployeeCreateInput = {
     firstName: initialData?.person.firstName || '',
     lastName: initialData?.person.lastName || '',
-    preferredName: initialData?.person.preferredName || '',
     email: initialData?.person.email || '',
     phone: initialData?.person.phone || '',
     dateOfBirth: initialData?.person.dateOfBirth || '',
@@ -233,9 +231,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       <section className={styles.sectionCard} aria-labelledby="section-personal-heading">
         <div className={styles.sectionHeader}>
           <h2 id="section-personal-heading" className={styles.sectionTitle}>
-            Personal Details
+            Personal information
           </h2>
-          <span className={styles.sectionTag}>PERSONAL RECORD</span>
         </div>
 
         <div className={styles.grid2}>
@@ -281,25 +278,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
         </div>
 
         <div className={styles.grid2}>
-          {/* Preferred Name */}
-          <div className={styles.fieldGroup}>
-            <label htmlFor="field-preferredName" className={styles.label}>
-              Preferred name <span className={styles.optionalTag}>(optional)</span>
-            </label>
-            <Input
-              id="field-preferredName"
-              {...register('preferredName')}
-              placeholder="e.g. Cleo"
-              aria-invalid={!!errors.preferredName}
-              aria-describedby={errors.preferredName ? 'field-preferredName-error' : undefined}
-            />
-            {errors.preferredName && (
-              <span id="field-preferredName-error" className={styles.fieldError}>
-                {errors.preferredName.message}
-              </span>
-            )}
-          </div>
-
           {/* Date of Birth */}
           <div className={styles.fieldGroup}>
             <label htmlFor="field-dateOfBirth" className={styles.label}>
@@ -331,9 +309,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       <section className={styles.sectionCard} aria-labelledby="section-contact-heading">
         <div className={styles.sectionHeader}>
           <h2 id="section-contact-heading" className={styles.sectionTitle}>
-            Contact & Location
+            Contact & location
           </h2>
-          <span className={styles.sectionTag}>LOCATION & REACH</span>
         </div>
 
         <div className={styles.grid2}>
@@ -467,9 +444,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       <section className={styles.sectionCard} aria-labelledby="section-employment-heading">
         <div className={styles.sectionHeader}>
           <h2 id="section-employment-heading" className={styles.sectionTitle}>
-            Employment Details
+            Employment
           </h2>
-          <span className={styles.sectionTag}>ORGANIZATION</span>
         </div>
 
         <div className={styles.grid2}>

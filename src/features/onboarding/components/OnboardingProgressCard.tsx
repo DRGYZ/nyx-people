@@ -17,21 +17,16 @@ export const OnboardingProgressCard: React.FC<OnboardingProgressCardProps> = ({
     <div className={styles.card} aria-labelledby="onboarding-progress-heading">
       <div className={styles.topRow}>
         <h2 id="onboarding-progress-heading" className={styles.heading}>
-          Day-One Readiness Progress
+          Onboarding progress
         </h2>
-        <span
-          className={`${styles.fractionBadge} ${
-            progress.isComplete ? styles.completeBadge : ''
-          } tabular-nums`}
-        >
+        <span className={`${styles.progressText} tabular-nums`}>
           {progress.completed} of {progress.total} complete · {progress.percent}%
         </span>
       </div>
 
-      <p className={styles.summaryText}>
-        {onboarding.attentionSummary ||
-          `${progress.completed} of ${progress.total} onboarding tasks have been verified for readiness.`}
-      </p>
+      {onboarding.attentionSummary && (
+        <p className={styles.summaryText}>{onboarding.attentionSummary}</p>
+      )}
 
       <div
         className={styles.progressBarContainer}
@@ -51,22 +46,15 @@ export const OnboardingProgressCard: React.FC<OnboardingProgressCardProps> = ({
 
       {progress.isComplete && (
         <div className={styles.successBanner} role="status">
-          <CheckCircle2 size={20} color="#059669" aria-hidden="true" />
+          <CheckCircle2 size={18} color="#059669" aria-hidden="true" />
           <div className={styles.successTextGroup}>
             <span className={styles.successTitle}>
-              All onboarding tasks complete. Day-one readiness achieved.
+              All onboarding tasks complete.
             </span>
             <span className={styles.successSubtitle}>
-              Employment status remains &apos;onboarding&apos; until explicitly transitioned in employee profile.
+              Status remains &apos;onboarding&apos; until updated in employee profile.
             </span>
           </div>
-        </div>
-      )}
-
-      {onboarding.responsiblePartner && (
-        <div className={styles.partnerSection}>
-          <span className={styles.partnerLabel}>Responsible Partner</span>
-          <p className={styles.partnerNote}>{onboarding.responsiblePartner.note}</p>
         </div>
       )}
     </div>

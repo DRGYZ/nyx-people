@@ -6,7 +6,6 @@ import { fetchEmployeeById, updateEmployee } from '@/data/api-client';
 import { EmployeeForm } from '@/features/employee-form/components/EmployeeForm';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
-import { formatFullDate } from '@/utils/formatters';
 import styles from './EditEmployeePage.module.css';
 
 export const EditEmployeePage: React.FC = () => {
@@ -139,8 +138,7 @@ export const EditEmployeePage: React.FC = () => {
         </Link>
         <h1 className={styles.title}>Edit {fullName}</h1>
         <p className={styles.subtitle}>
-          EMP ID: <span className="tabular-nums">{employee.id}</span> · Record created{' '}
-          <span className="tabular-nums">{formatFullDate(employee.timestamps.createdAt)}</span>
+          Update personal and employment details
         </p>
       </header>
 

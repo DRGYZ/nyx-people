@@ -34,7 +34,7 @@ export const NewEmployeePage: React.FC = () => {
         </Link>
         <h1 className={styles.title}>Add new employee</h1>
         <p className={styles.subtitle}>
-          Create an employee record across directory and systems
+          Add personal and employment details
         </p>
       </header>
 

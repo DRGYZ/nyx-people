@@ -4,6 +4,11 @@
   padding: 32px 24px 64px;
 }
 
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
 .cardsList {
   display: flex;
   flex-direction: column;

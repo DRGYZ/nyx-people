@@ -16,7 +16,6 @@ export const EmploymentSection: React.FC<EmploymentSectionProps> = ({ employment
         <h2 id="employment-heading" className={styles.sectionTitle}>
           Employment
         </h2>
-        <span className={styles.metaBadge}>PRIMARY RECORD</span>
       </div>
 
       <div className={styles.separator} aria-hidden="true" />

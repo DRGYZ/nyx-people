@@ -48,12 +48,6 @@ describe('EmployeeProfile Integration', () => {
     expect(screen.getByText('First-day plan')).toBeInTheDocument();
     expect(screen.getByText('Account provisioned')).toBeInTheDocument();
     expect(screen.getByText('Manager introduction')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Amelia Carter is coordinating initial pair-programming arrangements for Noah's first week./)
-    ).toBeInTheDocument();
-
-    // Record ref footer
-    expect(screen.getByText(/Record ref: EMP-0941 · Paris Bureau/)).toBeInTheDocument();
   });
 
   it('reveals and hides protected date of birth on toggle', async () => {

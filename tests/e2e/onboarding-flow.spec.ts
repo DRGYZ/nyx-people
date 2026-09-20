@@ -25,13 +25,6 @@ test.describe('People Operations Workspace — Milestone 3 Onboarding Workflows'
     await expect(page).toHaveURL(/\/onboarding/);
     await expect(page.getByRole('heading', { level: 1, name: 'Onboarding' })).toBeVisible();
 
-    // Verify summary metric cards
-    const metricsRegion = page.getByRole('region', { name: /onboarding metrics overview/i });
-    await expect(metricsRegion.getByText('Total Pipeline')).toBeVisible();
-    await expect(metricsRegion.getByText('Needs Attention')).toBeVisible();
-    await expect(metricsRegion.getByText('Starting Soon')).toBeVisible();
-    await expect(metricsRegion.getByText('Day-One Ready')).toBeVisible();
-
     // 2. Filter tabs: click "Needs attention"
     const attentionTab = page.getByRole('tab', { name: /needs attention/i });
     await expect(attentionTab).toBeVisible();

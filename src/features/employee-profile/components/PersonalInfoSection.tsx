@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Lock } from 'lucide-react';
 import { EmployeeAddress } from '@/domain/employee';
 import { formatFullDate } from '@/utils/formatters';
 import styles from './ProfileSections.module.css';
@@ -21,10 +20,6 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         <h2 id="personal-info-heading" className={styles.sectionTitle}>
           Personal information
         </h2>
-        <span className={styles.metaBadge}>
-          <Lock size={12} aria-hidden="true" />
-          <span>Confidential</span>
-        </span>
       </div>
 
       <div className={styles.separator} aria-hidden="true" />
@@ -38,9 +33,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                 {formatFullDate(dateOfBirth)}
               </span>
             ) : (
-              <span className={styles.fieldValue}>
-                •••••••• <span style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>(Protected / confidential)</span>
-              </span>
+              <span className={styles.fieldValue}>••••••••</span>
             )}
             <button
               type="button"

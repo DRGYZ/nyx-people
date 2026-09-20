@@ -7,7 +7,6 @@ import { EmploymentSection } from '@/features/employee-profile/components/Employ
 import { ContactSection } from '@/features/employee-profile/components/ContactSection';
 import { PersonalInfoSection } from '@/features/employee-profile/components/PersonalInfoSection';
 import { OnboardingChecklist } from '@/features/employee-profile/components/OnboardingChecklist';
-import { ProfileFooter } from '@/features/employee-profile/components/ProfileFooter';
 import { ProfileSkeleton } from '@/features/employee-profile/components/ProfileSkeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
@@ -92,11 +91,6 @@ export const EmployeeProfilePage: React.FC = () => {
           </div>
         )}
       </div>
-
-      <ProfileFooter
-        employeeId={employee.id}
-        location={employment.location}
-      />
     </div>
   );
 };

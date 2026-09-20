@@ -27,7 +27,7 @@ describe('EmployeeOnboardingPage Integration', () => {
     expect(screen.getByText(/4 of 6 complete · 67%/)).toBeInTheDocument();
 
     // Checklist tasks
-    expect(screen.getByRole('heading', { level: 2, name: 'Operational Readiness Tasks' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Tasks' })).toBeInTheDocument();
     expect(screen.getByText('Personal details')).toBeInTheDocument();
     expect(screen.getByText('Contract received')).toBeInTheDocument();
     expect(screen.getByText('Equipment requested')).toBeInTheDocument();
