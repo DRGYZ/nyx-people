@@ -8,6 +8,7 @@ import { NewEmployeePage } from '@/routes/employees/NewEmployeePage';
 import { EditEmployeePage } from '@/routes/employees/EditEmployeePage';
 import { OnboardingPage } from '@/routes/onboarding/OnboardingPage';
 import { EmployeeOnboardingPage } from '@/routes/onboarding/EmployeeOnboardingPage';
+import { OverviewPage } from '@/routes/overview/OverviewPage';
 
 interface RenderWithRouterOptions extends Omit<RenderOptions, 'wrapper'> {
   initialEntries?: string[];
@@ -20,6 +21,7 @@ export function renderWithRouter(
   const defaultUi = (
     <Routes>
       <Route path="/" element={<AppShell />}>
+        <Route path="overview" element={<OverviewPage />} />
         <Route path="employees" element={<EmployeesPage />} />
         <Route path="employees/new" element={<NewEmployeePage />} />
         <Route path="employees/:employeeId" element={<EmployeeProfilePage />} />

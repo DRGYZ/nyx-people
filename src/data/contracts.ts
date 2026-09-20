@@ -61,3 +61,5 @@ export interface UpdateOnboardingTaskResponse {
   progress: import('@/domain/onboarding').OnboardingProgress;
 }
 
+export type GetOverviewResponse = import('@/domain/overview').OverviewData;
+

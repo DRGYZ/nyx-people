@@ -229,5 +229,16 @@ export const handlers = [
       );
     }
   }),
+
+  // GET /api/overview
+  http.get('/api/overview', async () => {
+    if (process.env.NODE_ENV !== 'test') {
+      await delay(50);
+    }
+
+    const data = mockStore.getOverviewData();
+    return HttpResponse.json(data);
+  }),
 ];
+
 

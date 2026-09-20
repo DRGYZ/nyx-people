@@ -11,6 +11,7 @@ import {
   GetOnboardingPlanResponse,
   UpdateOnboardingTaskResponse,
   OnboardingEmployeeSummary,
+  GetOverviewResponse,
 } from '@/data/contracts';
 import {
   OnboardingTab,
@@ -24,6 +25,7 @@ import {
   createDefaultOnboardingTasks,
   normalizeOnboardingTasks,
 } from '@/domain/onboarding';
+import { deriveOverviewData } from '@/domain/overview';
 import { deterministicEmployees } from './fixtures';
 
 export const STORAGE_KEY = 'ledger-hr_employees_v1';
@@ -576,7 +578,12 @@ export class EmployeeMockStore {
       progress: calculateOnboardingProgress(emp.onboarding.tasks),
     };
   }
+
+  public getOverviewData(referenceDate?: Date): GetOverviewResponse {
+    return deriveOverviewData(this.employees, referenceDate);
+  }
 }
+
 
 export const mockStore = new EmployeeMockStore();
 

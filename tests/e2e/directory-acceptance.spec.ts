@@ -3,8 +3,8 @@ import AxeBuilder from '@axe-core/playwright';
 
 test.describe('People Operations Workspace — Milestone 1 Acceptance Flow', () => {
   test('full user flow: directory filter -> open profile -> return with preserved filters', async ({ page }) => {
-    // 1. Open /employees directly or via root redirect
-    await page.goto('/');
+    // 1. Open /employees directly
+    await page.goto('/employees');
     await expect(page).toHaveURL(/\/employees/);
 
     // Verify main headings and initial state

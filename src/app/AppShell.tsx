@@ -10,7 +10,7 @@ export const AppShell: React.FC = () => {
       <header className={styles.topNav} role="banner">
         <div className={styles.navContainer}>
           <div className={styles.leftGroup}>
-            <NavLink to="/employees" className={styles.brand} aria-label={`${BRAND_NAME} Home`}>
+            <NavLink to="/overview" className={styles.brand} aria-label={`${BRAND_NAME} Home`}>
               <span className={styles.brandDot} aria-hidden="true" />
               <span>{BRAND_NAME}</span>
             </NavLink>

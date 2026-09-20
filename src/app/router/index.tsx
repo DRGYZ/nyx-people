@@ -6,7 +6,8 @@ import { NewEmployeePage } from '@/routes/employees/NewEmployeePage';
 import { EditEmployeePage } from '@/routes/employees/EditEmployeePage';
 import { OnboardingPage } from '@/routes/onboarding/OnboardingPage';
 import { EmployeeOnboardingPage } from '@/routes/onboarding/EmployeeOnboardingPage';
-import { PlaceholderPage } from '@/routes/placeholders/PlaceholderPage';
+
+import { OverviewPage } from '@/routes/overview/OverviewPage';
 
 export const router = createBrowserRouter([
   {
@@ -15,7 +16,11 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/employees" replace />,
+        element: <Navigate to="/overview" replace />,
+      },
+      {
+        path: 'overview',
+        element: <OverviewPage />,
       },
       {
         path: 'employees',
@@ -38,22 +43,12 @@ export const router = createBrowserRouter([
         element: <EmployeeOnboardingPage />,
       },
       {
-        path: 'overview',
-        element: (
-          <PlaceholderPage
-            title="Overview"
-            description="Company-wide headcount telemetry, turnover, and operational metrics."
-            plannedMilestone="Milestone 4"
-          />
-        ),
-      },
-      {
         path: 'onboarding',
         element: <OnboardingPage />,
       },
       {
         path: '*',
-        element: <Navigate to="/employees" replace />,
+        element: <Navigate to="/overview" replace />,
       },
     ],
   },

@@ -10,6 +10,7 @@ import {
   GetOnboardingListResponse,
   GetOnboardingPlanResponse,
   UpdateOnboardingTaskResponse,
+  GetOverviewResponse,
 } from './contracts';
 
 export class ApiError extends Error {
@@ -252,6 +253,30 @@ export async function updateOnboardingTask(
 
   if (!response.ok) {
     let errorMessage = `Failed to update task ${taskKey} (${response.status})`;
+    try {
+      const errorJson = (await response.json()) as ApiErrorResponse;
+      if (errorJson.error) errorMessage = errorJson.error;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  return response.json();
+}
+
+export async function fetchOverview(
+  signal?: AbortSignal
+): Promise<GetOverviewResponse> {
+  const options: RequestInit = {};
+  if (signal && process.env.NODE_ENV !== 'test') {
+    options.signal = signal;
+  }
+
+  const response = await fetch('/api/overview', options);
+
+  if (!response.ok) {
+    let errorMessage = `Failed to fetch overview (${response.status})`;
     try {
       const errorJson = (await response.json()) as ApiErrorResponse;
       if (errorJson.error) errorMessage = errorJson.error;
