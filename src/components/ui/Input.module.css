@@ -32,6 +32,15 @@
   box-shadow: 0 0 0 1px var(--border-focus);
 }
 
+.input[aria-invalid="true"] {
+  border-color: #DC2626;
+}
+
+.input[aria-invalid="true"]:focus {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 1px #DC2626;
+}
+
 .withStartIcon {
   padding-left: 36px;
 }

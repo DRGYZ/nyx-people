@@ -4,8 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { Employee } from '@/domain/employee';
 import { InitialsAvatar, getInitials } from '@/components/ui/InitialsAvatar';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Button } from '@/components/ui/Button';
 import { formatFullDate } from '@/utils/formatters';
+import buttonStyles from '@/components/ui/Button.module.css';
 import styles from './ProfileHeader.module.css';
 
 interface ProfileHeaderProps {
@@ -52,14 +52,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
 
         <div className={styles.actions}>
-          <Button
-            variant="outline"
-            aria-disabled="true"
-            title="Employee editing is scheduled for Milestone 2"
-            onClick={(e) => e.preventDefault()}
+          <Link
+            to={`/employees/${employee.id}/edit`}
+            className={`${buttonStyles.button} ${buttonStyles.outline} ${buttonStyles.sizeMd}`}
+            aria-label={`Edit ${fullName}`}
           >
             Edit employee
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

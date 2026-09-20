@@ -1,6 +1,10 @@
 import { http, HttpResponse, delay } from 'msw';
 import { mockStore } from './store';
-import { DirectoryQueryParamsSchema } from '@/domain/schemas';
+import {
+  DirectoryQueryParamsSchema,
+  EmployeeCreateInputSchema,
+  EmployeeUpdateInputSchema,
+} from '@/domain/schemas';
 
 export const handlers = [
   // GET /api/employees
@@ -30,6 +34,20 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
+  // GET /api/managers
+  http.get('/api/managers', async ({ request }) => {
+    if (process.env.NODE_ENV !== 'test') {
+      await delay(30);
+    }
+
+    const url = new URL(request.url);
+    const q = url.searchParams.get('q') || '';
+    const excludeId = url.searchParams.get('excludeId') || undefined;
+
+    const managers = mockStore.searchManagers(q, excludeId);
+    return HttpResponse.json({ data: managers });
+  }),
+
   // GET /api/employees/:id
   http.get('/api/employees/:id', async ({ params }) => {
     if (process.env.NODE_ENV !== 'test') {
@@ -48,4 +66,99 @@ export const handlers = [
 
     return HttpResponse.json({ data: employee });
   }),
+
+  // POST /api/employees
+  http.post('/api/employees', async ({ request }) => {
+    if (process.env.NODE_ENV !== 'test') {
+      await delay(80);
+    }
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(
+        { error: 'Invalid JSON request body', statusCode: 400 },
+        { status: 400 }
+      );
+    }
+
+    const parseResult = EmployeeCreateInputSchema.safeParse(body);
+    if (!parseResult.success) {
+      const firstIssue = parseResult.error.issues[0]?.message || 'Validation failed';
+      return HttpResponse.json(
+        {
+          error: firstIssue,
+          details: parseResult.error.format(),
+          statusCode: 400,
+        },
+        { status: 400 }
+      );
+    }
+
+    try {
+      const created = mockStore.createEmployee(parseResult.data);
+      return HttpResponse.json({ data: created }, { status: 201 });
+    } catch (err: any) {
+      const isConflict = err.message && err.message.toLowerCase().includes('already registered');
+      return HttpResponse.json(
+        {
+          error: err.message || 'Failed to create employee',
+          statusCode: isConflict ? 409 : 400,
+        },
+        { status: isConflict ? 409 : 400 }
+      );
+    }
+  }),
+
+  // PATCH /api/employees/:id
+  http.patch('/api/employees/:id', async ({ params, request }) => {
+    if (process.env.NODE_ENV !== 'test') {
+      await delay(80);
+    }
+
+    const id = params.id as string;
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return HttpResponse.json(
+        { error: 'Invalid JSON request body', statusCode: 400 },
+        { status: 400 }
+      );
+    }
+
+    const parseResult = EmployeeUpdateInputSchema.safeParse(body);
+    if (!parseResult.success) {
+      const firstIssue = parseResult.error.issues[0]?.message || 'Validation failed';
+      return HttpResponse.json(
+        {
+          error: firstIssue,
+          details: parseResult.error.format(),
+          statusCode: 400,
+        },
+        { status: 400 }
+      );
+    }
+
+    try {
+      const updated = mockStore.updateEmployee(id, parseResult.data);
+      return HttpResponse.json({ data: updated });
+    } catch (err: any) {
+      const message = err.message || '';
+      const isNotFound = message.includes('not found');
+      const isConflict = message.toLowerCase().includes('already registered');
+      const statusCode = isNotFound ? 404 : isConflict ? 409 : 400;
+
+      return HttpResponse.json(
+        {
+          error: message || 'Failed to update employee',
+          statusCode,
+        },
+        { status: statusCode }
+      );
+    }
+  }),
 ];
+

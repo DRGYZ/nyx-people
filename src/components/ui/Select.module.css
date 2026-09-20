@@ -26,6 +26,15 @@
   box-shadow: 0 0 0 1px var(--border-focus);
 }
 
+.triggerError {
+  border-color: #DC2626 !important;
+}
+
+.triggerError:focus {
+  border-color: #DC2626 !important;
+  box-shadow: 0 0 0 1px #DC2626 !important;
+}
+
 .triggerIcon {
   display: flex;
   align-items: center;

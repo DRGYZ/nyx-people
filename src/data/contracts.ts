@@ -21,3 +21,16 @@ export interface ApiErrorResponse {
 }
 
 export type GetEmployeesParams = Partial<DirectoryQueryParams>;
+
+export interface EmployeeManagerOption {
+  id: string;
+  name: string;
+  initials: string;
+  role: string;
+  department: string;
+}
+
+export interface GetManagersResponse {
+  data: EmployeeManagerOption[];
+}
+

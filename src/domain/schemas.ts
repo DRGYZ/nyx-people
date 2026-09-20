@@ -112,3 +112,59 @@ export const DirectoryQueryParamsSchema = z.object({
 });
 
 export type DirectoryQueryParams = z.infer<typeof DirectoryQueryParamsSchema>;
+
+export const EmployeeCreateInputSchema = z.object({
+  firstName: z.string().trim().min(1, 'First name is required'),
+  lastName: z.string().trim().min(1, 'Last name is required'),
+  preferredName: z.string().trim().optional(),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  phone: z.string().trim().min(1, 'Phone number is required'),
+  dateOfBirth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date of birth must be in YYYY-MM-DD format')
+    .refine((val) => {
+      const d = new Date(val);
+      return !isNaN(d.getTime());
+    }, 'Invalid date of birth')
+    .refine((val) => {
+      const dob = new Date(val);
+      const now = new Date();
+      return dob <= now;
+    }, 'Date of birth cannot be in the future')
+    .refine((val) => {
+      const dob = new Date(val);
+      const now = new Date();
+      const minAgeDate = new Date(now.getFullYear() - 16, now.getMonth(), now.getDate());
+      return dob <= minAgeDate;
+    }, 'Employee must be at least 16 years old')
+    .refine((val) => {
+      const dob = new Date(val);
+      const now = new Date();
+      const maxAgeDate = new Date(now.getFullYear() - 100, now.getMonth(), now.getDate());
+      return dob >= maxAgeDate;
+    }, 'Please enter a valid date of birth'),
+  street: z.string().trim().min(1, 'Street address is required'),
+  postalCode: z.string().trim().min(1, 'Postal code is required'),
+  city: z.string().trim().min(1, 'City is required'),
+  country: z.string().trim().min(1, 'Country is required'),
+  jobTitle: z.string().trim().min(1, 'Job title is required'),
+  department: DepartmentSchema,
+  location: OfficeLocationSchema,
+  employmentType: EmploymentTypeSchema,
+  status: EmployeeStatusSchema,
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format')
+    .refine((val) => {
+      const d = new Date(val);
+      return !isNaN(d.getTime());
+    }, 'Invalid start date'),
+  managerId: z.string().optional(),
+});
+
+export const EmployeeUpdateInputSchema = EmployeeCreateInputSchema.partial();
+

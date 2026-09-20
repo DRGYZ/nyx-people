@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import buttonStyles from '@/components/ui/Button.module.css';
 import styles from './DirectoryHeader.module.css';
 
 interface DirectoryHeaderProps {
@@ -23,15 +24,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = ({
       </div>
 
       <div className={styles.actionArea}>
-        <Button
-          variant="primary"
-          icon={<Plus size={16} />}
-          aria-disabled="true"
-          title="Employee creation is scheduled for Milestone 2"
-          onClick={(e) => e.preventDefault()}
+        <Link
+          to="/employees/new"
+          className={`${buttonStyles.button} ${buttonStyles.primary} ${buttonStyles.sizeMd}`}
         >
-          Add employee
-        </Button>
+          <Plus size={16} aria-hidden="true" />
+          <span>Add employee</span>
+        </Link>
       </div>
     </header>
   );

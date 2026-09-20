@@ -9,29 +9,40 @@ export interface SelectOption {
 }
 
 interface SelectProps {
+  id?: string;
   value: string;
   onValueChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
   ariaLabel?: string;
+  ariaInvalid?: boolean;
+  ariaDescribedBy?: string;
   className?: string;
   triggerPrefix?: string;
+  disabled?: boolean;
 }
 
 export const Select: React.FC<SelectProps> = ({
+  id,
   value,
   onValueChange,
   options,
   placeholder,
   ariaLabel,
+  ariaInvalid,
+  ariaDescribedBy,
   className = '',
   triggerPrefix,
+  disabled,
 }) => {
   return (
-    <RadixSelect.Root value={value} onValueChange={onValueChange}>
+    <RadixSelect.Root value={value} onValueChange={onValueChange} disabled={disabled}>
       <RadixSelect.Trigger
-        className={`${styles.trigger} ${className}`}
+        id={id}
+        className={`${styles.trigger} ${ariaInvalid ? styles.triggerError : ''} ${className}`}
         aria-label={ariaLabel}
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedBy}
       >
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
           {triggerPrefix && <span style={{ color: 'var(--text-secondary)' }}>{triggerPrefix}</span>}

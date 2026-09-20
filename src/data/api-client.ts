@@ -1,8 +1,11 @@
+import { EmployeeCreateInput, EmployeeUpdateInput } from '@/domain/employee';
 import {
   GetEmployeesParams,
   GetEmployeesResponse,
   GetEmployeeByIdResponse,
   ApiErrorResponse,
+  GetManagersResponse,
+  EmployeeManagerOption,
 } from './contracts';
 
 export class ApiError extends Error {
@@ -80,3 +83,93 @@ export async function fetchEmployeeById(
 
   return response.json();
 }
+
+export async function createEmployee(
+  data: EmployeeCreateInput,
+  signal?: AbortSignal
+): Promise<GetEmployeeByIdResponse> {
+  const options: RequestInit = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  };
+
+  if (signal && process.env.NODE_ENV !== 'test') {
+    options.signal = signal;
+  }
+
+  const response = await fetch('/api/employees', options);
+
+  if (!response.ok) {
+    let errorMessage = `Failed to create employee (${response.status})`;
+    try {
+      const errorJson = (await response.json()) as ApiErrorResponse;
+      if (errorJson.error) errorMessage = errorJson.error;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  return response.json();
+}
+
+export async function updateEmployee(
+  id: string,
+  data: EmployeeUpdateInput,
+  signal?: AbortSignal
+): Promise<GetEmployeeByIdResponse> {
+  const options: RequestInit = {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  };
+
+  if (signal && process.env.NODE_ENV !== 'test') {
+    options.signal = signal;
+  }
+
+  const response = await fetch(`/api/employees/${encodeURIComponent(id)}`, options);
+
+  if (!response.ok) {
+    let errorMessage = `Failed to update employee ${id} (${response.status})`;
+    try {
+      const errorJson = (await response.json()) as ApiErrorResponse;
+      if (errorJson.error) errorMessage = errorJson.error;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(errorMessage, response.status);
+  }
+
+  return response.json();
+}
+
+export async function fetchManagers(
+  query: string = '',
+  excludeId?: string,
+  signal?: AbortSignal
+): Promise<EmployeeManagerOption[]> {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (excludeId) params.set('excludeId', excludeId);
+
+  const options: RequestInit = {};
+  if (signal && process.env.NODE_ENV !== 'test') {
+    options.signal = signal;
+  }
+
+  const response = await fetch(`/api/managers?${params.toString()}`, options);
+
+  if (!response.ok) {
+    throw new ApiError(`Failed to fetch managers (${response.status})`, response.status);
+  }
+
+  const result = (await response.json()) as GetManagersResponse;
+  return result.data;
+}
+

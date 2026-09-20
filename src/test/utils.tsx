@@ -4,6 +4,8 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AppShell } from '@/app/AppShell';
 import { EmployeesPage } from '@/routes/employees/EmployeesPage';
 import { EmployeeProfilePage } from '@/routes/employees/EmployeeProfilePage';
+import { NewEmployeePage } from '@/routes/employees/NewEmployeePage';
+import { EditEmployeePage } from '@/routes/employees/EditEmployeePage';
 
 interface RenderWithRouterOptions extends Omit<RenderOptions, 'wrapper'> {
   initialEntries?: string[];
@@ -17,7 +19,9 @@ export function renderWithRouter(
     <Routes>
       <Route path="/" element={<AppShell />}>
         <Route path="employees" element={<EmployeesPage />} />
+        <Route path="employees/new" element={<NewEmployeePage />} />
         <Route path="employees/:employeeId" element={<EmployeeProfilePage />} />
+        <Route path="employees/:employeeId/edit" element={<EditEmployeePage />} />
       </Route>
     </Routes>
   );

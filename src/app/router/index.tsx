@@ -2,6 +2,8 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/app/AppShell';
 import { EmployeesPage } from '@/routes/employees/EmployeesPage';
 import { EmployeeProfilePage } from '@/routes/employees/EmployeeProfilePage';
+import { NewEmployeePage } from '@/routes/employees/NewEmployeePage';
+import { EditEmployeePage } from '@/routes/employees/EditEmployeePage';
 import { PlaceholderPage } from '@/routes/placeholders/PlaceholderPage';
 
 export const router = createBrowserRouter([
@@ -18,8 +20,16 @@ export const router = createBrowserRouter([
         element: <EmployeesPage />,
       },
       {
+        path: 'employees/new',
+        element: <NewEmployeePage />,
+      },
+      {
         path: 'employees/:employeeId',
         element: <EmployeeProfilePage />,
+      },
+      {
+        path: 'employees/:employeeId/edit',
+        element: <EditEmployeePage />,
       },
       {
         path: 'overview',

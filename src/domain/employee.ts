@@ -91,3 +91,27 @@ export interface DirectoryCounts {
   onboarding: number;
   contractors: number;
 }
+
+export interface EmployeeCreateInput {
+  firstName: string;
+  lastName: string;
+  preferredName?: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  jobTitle: string;
+  department: Department;
+  location: OfficeLocation;
+  employmentType: EmploymentType;
+  status: EmployeeStatus;
+  startDate: string;
+  managerId?: string;
+}
+
+export type EmployeeUpdateInput = Partial<EmployeeCreateInput>;
+export type EmployeeFormValues = EmployeeCreateInput;
+
