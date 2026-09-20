@@ -12,6 +12,7 @@ import {
   EmployeeStatus,
 } from '@/domain/employee';
 import { EmployeeCreateInputSchema } from '@/domain/schemas';
+import { getNow } from '@/domain/clock';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectOption } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
@@ -106,8 +107,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     location: (initialData?.employment.location as OfficeLocation) || 'Paris',
     employmentType: (initialData?.employment.employmentType as EmploymentType) || 'full-time',
     status: (initialData?.employment.status as EmployeeStatus) || 'active',
-    startDate: initialData?.employment.startDate || new Date().toISOString().slice(0, 10),
-    managerId: initialData?.employment.manager?.id || '',
+    startDate: initialData?.employment.startDate || getNow().toISOString().slice(0, 10),
+    managerId: initialData?.employment.managerId || initialData?.employment.manager?.id || '',
   };
 
   const {

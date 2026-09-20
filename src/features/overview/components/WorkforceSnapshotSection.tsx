@@ -28,7 +28,7 @@ export const WorkforceSnapshotSection: React.FC<WorkforceSnapshotSectionProps> =
             <span className={styles.metricLabel}>Total Headcount</span>
             <div className={styles.metricValueRow}>
               <span className={`${styles.metricValue} tabular-nums`}>{snapshot.totalEmployees}</span>
-              <span className={styles.metricSub}>active</span>
+              <span className={styles.metricSub}>total</span>
             </div>
           </Link>
 

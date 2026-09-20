@@ -32,7 +32,7 @@ describe('OverviewPage Integration', () => {
     const attentionList = screen.getByRole('list', { name: /employees requiring immediate attention/i });
     expect(within(attentionList).getByText('Noah Williams')).toBeInTheDocument();
     
-    const noahCard = within(attentionList).getByText('Noah Williams').closest('article')!;
+    const noahCard = within(attentionList).getByText('Noah Williams').closest('li')!;
     expect(within(noahCard).getByText(/2 tasks remaining/i)).toBeInTheDocument();
     expect(within(noahCard).getByText('Account provisioned')).toBeInTheDocument();
     expect(within(noahCard).getByText('Manager introduction')).toBeInTheDocument();

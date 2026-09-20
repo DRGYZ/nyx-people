@@ -1,4 +1,27 @@
 import { z } from 'zod';
+import { getNow } from './clock';
+
+/**
+ * Validates whether a YYYY-MM-DD string is a real, existing calendar date.
+ * Rejects impossible dates like 2026-02-31, 2025-04-31, 2023-02-29.
+ * Validates leap years correctly (e.g. 2024-02-29 is valid).
+ */
+export function isValidCalendarDate(val: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false;
+  const [yStr, mStr, dStr] = val.split('-');
+  const y = Number(yStr);
+  const m = Number(mStr);
+  const d = Number(dStr);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return false;
+  if (m < 1 || m > 12 || d < 1 || d > 31) return false;
+  if (y < 1900) return false; // Documented sanity bound: reasonable calendar floor
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return (
+    date.getUTCFullYear() === y &&
+    date.getUTCMonth() === m - 1 &&
+    date.getUTCDate() === d
+  );
+}
 
 export const EmployeeStatusSchema = z.enum([
   'active',
@@ -34,13 +57,24 @@ export const OfficeLocationSchema = z.enum([
   'Remote',
 ]);
 
-export const OnboardingTaskSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  subtitle: z.string(),
-  completed: z.boolean(),
-  completedAt: z.string().optional(),
-});
+export const OnboardingTaskSchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().min(1),
+    subtitle: z.string(),
+    completed: z.boolean(),
+    completedAt: z.string().optional(),
+  })
+  .refine(
+    (task) => {
+      // Invariant: incomplete tasks must not have a completedAt timestamp
+      if (!task.completed && task.completedAt) {
+        return false;
+      }
+      return true;
+    },
+    { message: 'Incomplete tasks cannot have completedAt populated', path: ['completedAt'] }
+  );
 
 export const EmployeeAddressSchema = z.object({
   street: z.string(),
@@ -55,7 +89,18 @@ export const EmployeePersonSchema = z.object({
   preferredName: z.string().optional(),
   email: z.string().email(),
   phone: z.string(),
-  dateOfBirth: z.string(),
+  dateOfBirth: z
+    .string()
+    .refine(isValidCalendarDate, 'Date of birth must be a valid calendar date')
+    .refine((val) => {
+      const dob = new Date(`${val}T00:00:00Z`);
+      const now = getNow();
+      return dob.getTime() <= now.getTime();
+    }, 'Date of birth cannot be in the future')
+    .refine((val) => {
+      const year = parseInt(val.split('-')[0] || '0', 10);
+      return year >= 1900;
+    }, 'Date of birth year must be 1900 or later'),
   address: EmployeeAddressSchema,
 });
 
@@ -71,25 +116,34 @@ export const EmploymentDetailsSchema = z.object({
   location: OfficeLocationSchema,
   employmentType: EmploymentTypeSchema,
   status: EmployeeStatusSchema,
-  startDate: z.string(),
+  startDate: z.string().refine(isValidCalendarDate, 'Start date must be a valid calendar date'),
+  managerId: z.string().optional(),
   manager: EmployeeManagerSchema.optional(),
 });
 
-export const OnboardingDetailsSchema = z.object({
-  totalTasks: z.number().int().nonnegative(),
-  completedTasks: z.number().int().nonnegative(),
-  tasks: z.array(OnboardingTaskSchema),
-  responsiblePartner: z
-    .object({
-      name: z.string(),
-      note: z.string(),
-    })
-    .optional(),
-  attentionSummary: z.string().optional(),
-});
+export const OnboardingDetailsSchema = z
+  .object({
+    totalTasks: z.number().int().nonnegative().optional(),
+    completedTasks: z.number().int().nonnegative().optional(),
+    tasks: z.array(OnboardingTaskSchema),
+    responsiblePartner: z
+      .object({
+        name: z.string(),
+        note: z.string(),
+      })
+      .optional(),
+    attentionSummary: z.string().optional(),
+  })
+  .refine(
+    (details) => {
+      const ids = details.tasks.map((t) => t.id);
+      return new Set(ids).size === ids.length;
+    },
+    { message: 'Onboarding tasks must have unique IDs', path: ['tasks'] }
+  );
 
 export const EmployeeSchema = z.object({
-  id: z.string(),
+  id: z.string().regex(/^EMP-\d{4,}$/, 'Employee ID must be in format EMP-XXXX'),
   person: EmployeePersonSchema,
   employment: EmploymentDetailsSchema,
   onboarding: OnboardingDetailsSchema.optional(),
@@ -98,6 +152,19 @@ export const EmployeeSchema = z.object({
     updatedAt: z.string(),
   }),
 });
+
+export const PersistedEnvelopeV1Schema = z.object({
+  version: z.literal(1),
+  employees: z.array(EmployeeSchema).refine(
+    (emps) => {
+      const ids = emps.map((e) => e.id);
+      return new Set(ids).size === ids.length;
+    },
+    { message: 'Persisted employees must not contain duplicate IDs' }
+  ),
+});
+
+export type PersistedEnvelopeV1 = z.infer<typeof PersistedEnvelopeV1Schema>;
 
 export const DirectoryQueryParamsSchema = z.object({
   q: z.string().default(''),
@@ -126,27 +193,16 @@ export const EmployeeCreateInputSchema = z.object({
   dateOfBirth: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date of birth must be in YYYY-MM-DD format')
+    .refine(isValidCalendarDate, 'Date of birth must be a valid calendar date')
     .refine((val) => {
-      const d = new Date(val);
-      return !isNaN(d.getTime());
-    }, 'Invalid date of birth')
-    .refine((val) => {
-      const dob = new Date(val);
-      const now = new Date();
-      return dob <= now;
+      const dob = new Date(`${val}T00:00:00Z`);
+      const now = getNow();
+      return dob.getTime() <= now.getTime();
     }, 'Date of birth cannot be in the future')
     .refine((val) => {
-      const dob = new Date(val);
-      const now = new Date();
-      const minAgeDate = new Date(now.getFullYear() - 16, now.getMonth(), now.getDate());
-      return dob <= minAgeDate;
-    }, 'Employee must be at least 16 years old')
-    .refine((val) => {
-      const dob = new Date(val);
-      const now = new Date();
-      const maxAgeDate = new Date(now.getFullYear() - 100, now.getMonth(), now.getDate());
-      return dob >= maxAgeDate;
-    }, 'Please enter a valid date of birth'),
+      const year = parseInt(val.split('-')[0] || '0', 10);
+      return year >= 1900;
+    }, 'Date of birth year must be 1900 or later'),
   street: z.string().trim().min(1, 'Street address is required'),
   postalCode: z.string().trim().min(1, 'Postal code is required'),
   city: z.string().trim().min(1, 'City is required'),
@@ -159,12 +215,8 @@ export const EmployeeCreateInputSchema = z.object({
   startDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format')
-    .refine((val) => {
-      const d = new Date(val);
-      return !isNaN(d.getTime());
-    }, 'Invalid start date'),
+    .refine(isValidCalendarDate, 'Start date must be a valid calendar date'),
   managerId: z.string().optional(),
 });
 
 export const EmployeeUpdateInputSchema = EmployeeCreateInputSchema.partial();
-

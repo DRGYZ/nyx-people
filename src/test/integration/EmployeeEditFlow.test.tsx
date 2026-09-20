@@ -60,10 +60,9 @@ describe('Employee Edit Flow Integration', () => {
 
     // Should redirect to profile page /employees/EMP-0941
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /noah williams/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: 'Noah Williams' })).toBeInTheDocument();
+      expect(screen.getAllByText(/principal systems engineer/i).length).toBeGreaterThanOrEqual(1);
     });
-
-    expect(screen.getAllByText(/principal systems engineer/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('displays not found message for non-existent employee ID', async () => {

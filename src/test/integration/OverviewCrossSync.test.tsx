@@ -23,7 +23,7 @@ describe('Overview Cross-App Synchronization', () => {
 
     const attentionList = screen.getByRole('list', { name: /employees requiring immediate attention/i });
     expect(within(attentionList).getByText('Noah Williams')).toBeInTheDocument();
-    const noahCard = within(attentionList).getByText('Noah Williams').closest('article')!;
+    const noahCard = within(attentionList).getByText('Noah Williams').closest('li')!;
     expect(within(noahCard).getByText(/2 tasks remaining/i)).toBeInTheDocument();
 
     // 2. Click "View onboarding" to navigate to Noah's checklist

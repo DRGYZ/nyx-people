@@ -38,9 +38,12 @@ beforeAll(() => {
   server.listen({ onUnhandledRequest: 'warn' });
 });
 
-// Reset handlers after each test
+// Reset handlers and storage after each test
 afterEach(() => {
   server.resetHandlers();
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.clear();
+  }
 });
 
 // Clean up after all tests

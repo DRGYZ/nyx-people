@@ -58,12 +58,13 @@ export interface EmploymentDetails {
   employmentType: EmploymentType;
   status: EmployeeStatus;
   startDate: string; // ISO format: YYYY-MM-DD
+  managerId?: string;
   manager?: EmployeeManager;
 }
 
 export interface OnboardingDetails {
-  totalTasks: number;
-  completedTasks: number;
+  totalTasks?: number;
+  completedTasks?: number;
   tasks: OnboardingTask[];
   responsiblePartner?: {
     name: string;

@@ -3,6 +3,8 @@ import {
   DirectoryCounts,
   EmployeeCreateInput,
   EmployeeUpdateInput,
+  EmployeeManager,
+  OnboardingDetails,
 } from '@/domain/employee';
 import {
   GetEmployeesParams,
@@ -22,15 +24,22 @@ import {
   formatStartUrgency,
   needsAttention,
   isStartingSoon,
-  createDefaultOnboardingTasks,
-  normalizeOnboardingTasks,
+  reconcileOnboardingTasks,
+  syncOnboardingPlanOnStatusChange,
 } from '@/domain/onboarding';
+import { getNow } from '@/domain/clock';
+import { PersistedEnvelopeV1, PersistedEnvelopeV1Schema } from '@/domain/schemas';
 import { deriveOverviewData } from '@/domain/overview';
-import { deterministicEmployees } from './fixtures';
+import { createBaselineEmployees } from './fixtures';
 
 export const STORAGE_KEY = 'ledger-hr_employees_v1';
 
-function loadPersistedEmployees(): Employee[] | null {
+/**
+ * Loads, parses, and validates the persisted employee storage envelope.
+ * Returns null if stored JSON is corrupt, schema is invalid, unknown version,
+ * or contains duplicate IDs, triggering controlled fallback to baseline.
+ */
+export function loadPersistedEmployees(): Employee[] | null {
   if (typeof window === 'undefined' || !window.localStorage) {
     return null;
   }
@@ -38,34 +47,49 @@ function loadPersistedEmployees(): Employee[] | null {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return (parsed as Employee[]).map((emp) => {
-        if (emp.onboarding && emp.onboarding.tasks) {
-          return {
-            ...emp,
-            onboarding: {
-              ...emp.onboarding,
-              tasks: normalizeOnboardingTasks(emp.onboarding.tasks),
-            },
-          };
-        }
-        return emp;
-      });
+    const result = PersistedEnvelopeV1Schema.safeParse(parsed);
+    if (!result.success) {
+      console.warn('Persisted state schema validation failed, falling back to baseline:', result.error);
+      return null;
     }
+    return result.data.employees.map((emp) => {
+      if (emp.onboarding && emp.onboarding.tasks) {
+        const reconciledTasks = reconcileOnboardingTasks(emp.onboarding.tasks);
+        const progress = calculateOnboardingProgress(reconciledTasks);
+        return {
+          ...emp,
+          onboarding: {
+            ...emp.onboarding,
+            tasks: reconciledTasks,
+            totalTasks: progress.total,
+            completedTasks: progress.completed,
+          },
+        };
+      }
+      return emp;
+    });
   } catch (err) {
-    console.warn('Failed to parse persisted employees from localStorage:', err);
+    console.warn('Failed to parse persisted employees from localStorage, falling back to baseline:', err);
+    return null;
   }
-  return null;
 }
 
-function savePersistedEmployees(employees: Employee[]): void {
+/**
+ * Saves employees to localStorage inside a versioned envelope.
+ * Throws on storage failures (e.g. QuotaExceededError) so mutations can abort.
+ */
+export function savePersistedEmployees(employees: Employee[]): void {
   if (typeof window === 'undefined' || !window.localStorage) {
     return;
   }
+  const envelope: PersistedEnvelopeV1 = {
+    version: 1,
+    employees,
+  };
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
-  } catch (err) {
-    console.warn('Failed to persist employees to localStorage:', err);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope));
+  } catch (err: any) {
+    throw new Error(`Storage write failed: ${err?.message || 'Unable to persist state to browser storage'}`);
   }
 }
 
@@ -74,21 +98,54 @@ export class EmployeeMockStore {
 
   constructor(initialData?: Employee[]) {
     if (initialData) {
-      this.employees = [...initialData];
+      this.employees = structuredClone(initialData);
     } else {
       const persisted = loadPersistedEmployees();
       if (persisted) {
         this.employees = persisted;
       } else {
-        this.employees = [...deterministicEmployees];
+        this.employees = createBaselineEmployees();
         savePersistedEmployees(this.employees);
       }
     }
   }
 
   public resetToBaseline(): void {
-    this.employees = [...deterministicEmployees];
+    this.employees = createBaselineEmployees();
     savePersistedEmployees(this.employees);
+  }
+
+  /**
+   * Resolves presentation manager details dynamically from the referenced employee ID.
+   */
+  public resolveManager(managerId?: string): EmployeeManager | undefined {
+    if (!managerId) return undefined;
+    const mgr = this.employees.find((e) => e.id.toLowerCase() === managerId.toLowerCase());
+    if (!mgr) return undefined;
+    const initials = `${mgr.person.firstName[0] || ''}${mgr.person.lastName[0] || ''}`.toUpperCase();
+    return {
+      id: mgr.id,
+      name: `${mgr.person.firstName} ${mgr.person.lastName}`,
+      initials,
+    };
+  }
+
+  /**
+   * Resolves an employee's presentation details (like manager details) dynamically.
+   */
+  public resolveEmployee(emp: Employee): Employee {
+    const managerId = emp.employment.managerId !== undefined
+      ? (emp.employment.managerId || undefined)
+      : emp.employment.manager?.id;
+    const resolvedManager = managerId ? this.resolveManager(managerId) : undefined;
+    return {
+      ...emp,
+      employment: {
+        ...emp.employment,
+        managerId,
+        manager: resolvedManager,
+      },
+    };
   }
 
   // Calculate counts across the whole dataset for tabs
@@ -97,7 +154,7 @@ export class EmployeeMockStore {
     let onboarding = 0;
     let contractors = 0;
 
-    const referenceDate = new Date('2026-09-20').getTime();
+    const referenceDate = getNow().getTime();
     const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000;
 
     for (const emp of this.employees) {
@@ -132,7 +189,7 @@ export class EmployeeMockStore {
     const page = Math.max(1, Number(params.page) || 1);
     const pageSize = Math.max(1, Number(params.pageSize) || 25);
 
-    const referenceDate = new Date('2026-09-20').getTime();
+    const referenceDate = getNow().getTime();
     const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000;
 
     // 1. Filter by preset view
@@ -161,37 +218,31 @@ export class EmployeeMockStore {
           fullName.includes(q) ||
           email.includes(q) ||
           role.includes(q) ||
-          dept.includes(q)
+          dept.includes(q) ||
+          emp.id.toLowerCase().includes(q)
         );
       });
     }
 
     // 3. Filter by department
-    if (department && department !== 'all') {
-      filtered = filtered.filter(
-        (emp) => emp.employment.department.toLowerCase() === department.toLowerCase()
-      );
+    if (department !== 'all') {
+      filtered = filtered.filter((emp) => emp.employment.department === department);
     }
 
     // 4. Filter by status
-    if (status && status !== 'all') {
-      filtered = filtered.filter(
-        (emp) => emp.employment.status.toLowerCase() === status.toLowerCase()
-      );
+    if (status !== 'all') {
+      filtered = filtered.filter((emp) => emp.employment.status === status);
     }
 
     // 5. Filter by employment type
-    if (employmentType && employmentType !== 'all') {
-      filtered = filtered.filter(
-        (emp) => emp.employment.employmentType.toLowerCase() === employmentType.toLowerCase()
-      );
+    if (employmentType !== 'all') {
+      filtered = filtered.filter((emp) => emp.employment.employmentType === employmentType);
     }
 
     // 6. Sort (only if not 'default')
     if (sortBy && sortBy !== 'default') {
       filtered.sort((a, b) => {
         let comparison = 0;
-
         switch (sortBy) {
           case 'name': {
             const nameA = `${a.person.lastName} ${a.person.firstName}`.toLowerCase();
@@ -199,58 +250,64 @@ export class EmployeeMockStore {
             comparison = nameA.localeCompare(nameB);
             break;
           }
-          case 'department': {
+          case 'department':
             comparison = a.employment.department.localeCompare(b.employment.department);
             break;
-          }
-          case 'status': {
-            comparison = a.employment.status.localeCompare(b.employment.status);
-            break;
-          }
-          case 'startDate': {
-            comparison = a.employment.startDate.localeCompare(b.employment.startDate);
-            break;
-          }
-          case 'role': {
+          case 'role':
             comparison = a.employment.jobTitle.localeCompare(b.employment.jobTitle);
             break;
-          }
-          default:
-            comparison = 0;
+          case 'status':
+            comparison = a.employment.status.localeCompare(b.employment.status);
+            break;
+          case 'startDate':
+            comparison = a.employment.startDate.localeCompare(b.employment.startDate);
+            break;
         }
-
         return sortDir === 'desc' ? -comparison : comparison;
       });
     }
 
-    // 7. Paginate
     const total = filtered.length;
     const totalPages = Math.ceil(total / pageSize) || 1;
-    const startIndex = (page - 1) * pageSize;
-    const paginatedData = filtered.slice(startIndex, startIndex + pageSize);
+    const safePage = Math.min(page, totalPages);
+    const startIndex = (safePage - 1) * pageSize;
+    const paginatedEmployees = filtered
+      .slice(startIndex, startIndex + pageSize)
+      .map((e) => this.resolveEmployee(e));
+
+    const allDepartments = new Set(this.employees.map((e) => e.employment.department));
 
     return {
-      data: paginatedData,
+      data: paginatedEmployees,
       total,
-      page,
+      page: safePage,
       pageSize,
       totalPages,
       counts: this.getCounts(),
-      totalDepartments: 8,
+      totalDepartments: allDepartments.size,
     };
   }
 
-  public getEmployeeById(id: string): Employee | undefined {
-    return this.employees.find(
-      (emp) => emp.id.toLowerCase() === id.toLowerCase()
-    );
+  public getEmployeeById(id: string): Employee | null {
+    const target = this.employees.find((e) => e.id.toLowerCase() === id.toLowerCase());
+    return target ? this.resolveEmployee(target) : null;
   }
 
-  public searchManagers(query: string = '', excludeId?: string) {
+  public searchManagers(
+    query = '',
+    excludeId?: string
+  ): Array<{
+    id: string;
+    name: string;
+    initials: string;
+    role: string;
+    department: string;
+  }> {
     const q = query.trim().toLowerCase();
     return this.employees
       .filter((e) => {
         if (excludeId && e.id.toLowerCase() === excludeId.toLowerCase()) return false;
+        if (e.employment.status === 'offboarded') return false;
         if (!q) return true;
         const fullName = `${e.person.firstName} ${e.person.lastName}`.toLowerCase();
         return (
@@ -269,6 +326,10 @@ export class EmployeeMockStore {
       }));
   }
 
+  public getManagers(query = '', excludeId?: string) {
+    return this.searchManagers(query, excludeId);
+  }
+
   public createEmployee(input: EmployeeCreateInput): Employee {
     const normalizedEmail = input.email.trim().toLowerCase();
     const existing = this.employees.find(
@@ -278,6 +339,7 @@ export class EmployeeMockStore {
       throw new Error(`Email "${input.email}" is already registered to another employee.`);
     }
 
+    // Safe ID generation ensuring zero collisions
     let maxId = 0;
     for (const e of this.employees) {
       const match = e.id.match(/^EMP-(\d+)$/i);
@@ -286,23 +348,26 @@ export class EmployeeMockStore {
         if (!isNaN(num) && num > maxId) maxId = num;
       }
     }
-    const newId = `EMP-${String(maxId + 1).padStart(4, '0')}`;
-
-    // Resolve manager
-    let manager = undefined;
-    if (input.managerId) {
-      const mgr = this.getEmployeeById(input.managerId);
-      if (mgr) {
-        manager = {
-          id: mgr.id,
-          name: `${mgr.person.firstName} ${mgr.person.lastName}`,
-          initials: `${mgr.person.firstName[0] || ''}${mgr.person.lastName[0] || ''}`.toUpperCase(),
-        };
-      }
+    let candidateNum = maxId + 1;
+    let newId = `EMP-${String(candidateNum).padStart(4, '0')}`;
+    while (this.employees.some((e) => e.id.toLowerCase() === newId.toLowerCase())) {
+      candidateNum++;
+      newId = `EMP-${String(candidateNum).padStart(4, '0')}`;
     }
 
-    const now = new Date().toISOString();
-    const defaultTasks = createDefaultOnboardingTasks();
+    // Resolve manager with validation
+    let managerId: string | undefined = undefined;
+    if (input.managerId && input.managerId.trim()) {
+      const normalizedMgrId = input.managerId.trim();
+      const mgr = this.employees.find((e) => e.id.toLowerCase() === normalizedMgrId.toLowerCase());
+      if (!mgr) {
+        throw new Error(`Manager with ID '${normalizedMgrId}' not found.`);
+      }
+      managerId = mgr.id;
+    }
+
+    const now = getNow().toISOString();
+    const onboarding = syncOnboardingPlanOnStatusChange('active', input.status);
 
     const newEmployee: Employee = {
       id: newId,
@@ -327,34 +392,25 @@ export class EmployeeMockStore {
         employmentType: input.employmentType,
         status: input.status,
         startDate: input.startDate,
-        manager,
+        managerId,
       },
-      onboarding:
-        input.status === 'onboarding'
-          ? {
-              totalTasks: defaultTasks.length,
-              completedTasks: 0,
-              tasks: defaultTasks,
-              responsiblePartner: {
-                name: 'Eleanor Vance',
-                note: 'Assigned People Operations Partner for onboarding setup',
-              },
-              attentionSummary: 'New onboarding workflow initialized. Pending initial account setup.',
-            }
-          : undefined,
+      onboarding,
       timestamps: {
         createdAt: now,
         updatedAt: now,
       },
     };
 
-    this.employees.unshift(newEmployee);
-    savePersistedEmployees(this.employees);
-    return newEmployee;
+    // Atomic storage write before memory update
+    const nextEmployees = [newEmployee, ...this.employees];
+    savePersistedEmployees(nextEmployees);
+    this.employees = nextEmployees;
+
+    return this.resolveEmployee(newEmployee);
   }
 
   public updateEmployee(id: string, input: EmployeeUpdateInput): Employee {
-    const target = this.getEmployeeById(id);
+    const target = this.employees.find((e) => e.id.toLowerCase() === id.toLowerCase());
     if (!target) {
       throw new Error(`Employee with ID '${id}' not found.`);
     }
@@ -369,43 +425,31 @@ export class EmployeeMockStore {
       }
     }
 
-    if (input.managerId && input.managerId.toLowerCase() === id.toLowerCase()) {
-      throw new Error('An employee cannot be their own manager.');
-    }
-
-    // Resolve manager
-    let manager = target.employment.manager;
+    // Resolve manager with validation
+    let managerId = target.employment.managerId || target.employment.manager?.id;
     if (input.managerId !== undefined) {
-      if (!input.managerId) {
-        manager = undefined;
+      if (!input.managerId || !input.managerId.trim()) {
+        managerId = undefined;
       } else {
-        const mgr = this.getEmployeeById(input.managerId);
-        if (mgr) {
-          manager = {
-            id: mgr.id,
-            name: `${mgr.person.firstName} ${mgr.person.lastName}`,
-            initials: `${mgr.person.firstName[0] || ''}${mgr.person.lastName[0] || ''}`.toUpperCase(),
-          };
+        const normalizedMgrId = input.managerId.trim();
+        if (normalizedMgrId.toLowerCase() === id.toLowerCase()) {
+          throw new Error('An employee cannot be their own manager.');
         }
+        const mgr = this.employees.find((e) => e.id.toLowerCase() === normalizedMgrId.toLowerCase());
+        if (!mgr) {
+          throw new Error(`Manager with ID '${normalizedMgrId}' not found.`);
+        }
+        managerId = mgr.id;
       }
     }
 
-    const now = new Date().toISOString();
-
-    let onboarding = target.onboarding;
-    if (input.status === 'onboarding' && !onboarding) {
-      const defaultTasks = createDefaultOnboardingTasks();
-      onboarding = {
-        totalTasks: defaultTasks.length,
-        completedTasks: 0,
-        tasks: defaultTasks,
-        responsiblePartner: {
-          name: 'Eleanor Vance',
-          note: 'Assigned People Operations Partner for onboarding setup',
-        },
-        attentionSummary: 'New onboarding workflow initialized. Pending initial account setup.',
-      };
-    }
+    const now = getNow().toISOString();
+    const nextStatus = input.status !== undefined ? input.status : target.employment.status;
+    const onboarding = syncOnboardingPlanOnStatusChange(
+      target.employment.status,
+      nextStatus,
+      target.onboarding
+    );
 
     const updatedEmployee: Employee = {
       ...target,
@@ -436,9 +480,10 @@ export class EmployeeMockStore {
         location: input.location !== undefined ? input.location : target.employment.location,
         employmentType:
           input.employmentType !== undefined ? input.employmentType : target.employment.employmentType,
-        status: input.status !== undefined ? input.status : target.employment.status,
+        status: nextStatus,
         startDate: input.startDate !== undefined ? input.startDate : target.employment.startDate,
-        manager,
+        managerId,
+        manager: undefined,
       },
       onboarding,
       timestamps: {
@@ -447,23 +492,22 @@ export class EmployeeMockStore {
       },
     };
 
-    const index = this.employees.findIndex(
-      (e) => e.id.toLowerCase() === id.toLowerCase()
-    );
-    if (index !== -1) {
-      this.employees[index] = updatedEmployee;
-    }
-    savePersistedEmployees(this.employees);
-    return updatedEmployee;
+    const nextEmployees = this.employees.map((e) => (e.id.toLowerCase() === id.toLowerCase() ? updatedEmployee : e));
+    savePersistedEmployees(nextEmployees);
+    this.employees = nextEmployees;
+
+    return this.resolveEmployee(updatedEmployee);
   }
 
   public getOnboardingCounts(): OnboardingCounts {
-    return calculateOnboardingCounts(this.employees);
+    const resolved = this.employees.map((e) => this.resolveEmployee(e));
+    return calculateOnboardingCounts(resolved);
   }
 
   public getOnboardingList(tab: OnboardingTab = 'all'): GetOnboardingListResponse {
-    const filtered = filterOnboardingEmployees(this.employees, tab);
-    const counts = calculateOnboardingCounts(this.employees);
+    const resolved = this.employees.map((e) => this.resolveEmployee(e));
+    const filtered = filterOnboardingEmployees(resolved, tab);
+    const counts = calculateOnboardingCounts(resolved);
 
     // Sort: starting soonest first, then name
     const sorted = [...filtered].sort((a, b) => {
@@ -494,34 +538,29 @@ export class EmployeeMockStore {
     };
   }
 
+  /**
+   * Strictly read-only GET operation for onboarding detail.
+   * Returns null if employee does not exist or has no active onboarding plan.
+   * Never mutates or persists state on read.
+   */
   public getOnboardingPlan(employeeId: string): GetOnboardingPlanResponse | null {
-    const emp = this.getEmployeeById(employeeId);
-    if (!emp) return null;
-
-    if (!emp.onboarding) {
-      const defaultTasks = createDefaultOnboardingTasks();
-      emp.onboarding = {
-        totalTasks: defaultTasks.length,
-        completedTasks: 0,
-        tasks: defaultTasks,
-        responsiblePartner: {
-          name: 'Eleanor Vance',
-          note: 'Assigned People Operations Partner for onboarding setup',
-        },
-        attentionSummary: 'Onboarding workflow initialized.',
-      };
-      savePersistedEmployees(this.employees);
+    const target = this.employees.find((e) => e.id.toLowerCase() === employeeId.toLowerCase());
+    if (!target || !target.onboarding) {
+      return null;
     }
 
-    emp.onboarding.tasks = normalizeOnboardingTasks(emp.onboarding.tasks);
-    emp.onboarding.totalTasks = 6;
-    emp.onboarding.completedTasks = emp.onboarding.tasks.filter((t) => t.completed).length;
-
-    const progress = calculateOnboardingProgress(emp.onboarding.tasks);
+    const emp = this.resolveEmployee(target);
+    const reconciledTasks = reconcileOnboardingTasks(emp.onboarding?.tasks);
+    const progress = calculateOnboardingProgress(reconciledTasks);
 
     return {
       employee: emp,
-      onboarding: emp.onboarding,
+      onboarding: {
+        ...emp.onboarding!,
+        tasks: reconciledTasks,
+        totalTasks: progress.total,
+        completedTasks: progress.completed,
+      },
       progress,
     };
   }
@@ -531,59 +570,74 @@ export class EmployeeMockStore {
     taskKey: string,
     completed: boolean
   ): UpdateOnboardingTaskResponse {
-    const emp = this.getEmployeeById(employeeId);
+    const emp = this.employees.find((e) => e.id.toLowerCase() === employeeId.toLowerCase());
     if (!emp) {
       throw new Error(`Employee '${employeeId}' not found.`);
     }
 
-    if (!emp.onboarding) {
-      const defaultTasks = createDefaultOnboardingTasks();
-      emp.onboarding = {
-        totalTasks: 6,
-        completedTasks: 0,
-        tasks: defaultTasks,
-      };
+    if (!emp.onboarding || emp.employment.status !== 'onboarding') {
+      throw new Error(`No active onboarding plan found for employee '${employeeId}'.`);
     }
 
-    emp.onboarding.tasks = normalizeOnboardingTasks(emp.onboarding.tasks);
-
-    const taskIndex = emp.onboarding.tasks.findIndex(
+    const tasks = reconcileOnboardingTasks(emp.onboarding.tasks);
+    const taskIndex = tasks.findIndex(
       (t) => t.id.toLowerCase() === taskKey.toLowerCase()
     );
 
-    const task = emp.onboarding.tasks[taskIndex];
-    if (!task) {
+    if (taskIndex === -1) {
       throw new Error(`Task '${taskKey}' not found for employee '${employeeId}'.`);
     }
 
-    task.completed = completed;
-    task.completedAt = completed ? new Date().toISOString() : undefined;
+    const now = getNow().toISOString();
+    tasks[taskIndex] = {
+      ...tasks[taskIndex]!,
+      completed,
+      completedAt: completed ? now : undefined,
+    };
 
-    emp.onboarding.completedTasks = emp.onboarding.tasks.filter((t) => t.completed).length;
-    emp.onboarding.totalTasks = emp.onboarding.tasks.length;
-    emp.timestamps.updatedAt = new Date().toISOString();
+    const progress = calculateOnboardingProgress(tasks);
+    let attentionSummary = emp.onboarding.attentionSummary;
 
-    if (emp.onboarding.completedTasks === emp.onboarding.totalTasks) {
-      emp.onboarding.attentionSummary = 'All onboarding tasks complete. Day-one readiness achieved.';
+    if (progress.isComplete) {
+      attentionSummary = 'All onboarding tasks complete. Day-one readiness achieved.';
     } else {
-      const remaining = emp.onboarding.tasks.filter((t) => !t.completed).map((t) => t.title).join(', ');
-      emp.onboarding.attentionSummary = `Onboarding is ${emp.onboarding.completedTasks} of ${emp.onboarding.totalTasks} complete. Remaining: ${remaining}.`;
+      const remaining = tasks.filter((t) => !t.completed).map((t) => t.title).join(', ');
+      attentionSummary = `Onboarding is ${progress.completed} of ${progress.total} complete. Remaining: ${remaining}.`;
     }
 
-    savePersistedEmployees(this.employees);
+    const updatedOnboarding: OnboardingDetails = {
+      ...emp.onboarding,
+      tasks,
+      totalTasks: progress.total,
+      completedTasks: progress.completed,
+      attentionSummary,
+    };
 
+    const updatedEmployee: Employee = {
+      ...emp,
+      onboarding: updatedOnboarding,
+      timestamps: {
+        ...emp.timestamps,
+        updatedAt: now,
+      },
+    };
+
+    const nextEmployees = this.employees.map((e) => (e.id.toLowerCase() === emp.id.toLowerCase() ? updatedEmployee : e));
+    savePersistedEmployees(nextEmployees);
+    this.employees = nextEmployees;
+
+    const resolved = this.resolveEmployee(updatedEmployee);
     return {
-      employee: emp,
-      onboarding: emp.onboarding,
-      progress: calculateOnboardingProgress(emp.onboarding.tasks),
+      employee: resolved,
+      onboarding: updatedOnboarding,
+      progress,
     };
   }
 
-  public getOverviewData(referenceDate?: Date): GetOverviewResponse {
-    return deriveOverviewData(this.employees, referenceDate);
+  public getOverviewData(referenceDate: Date = getNow()): GetOverviewResponse {
+    const resolved = this.employees.map((e) => this.resolveEmployee(e));
+    return deriveOverviewData(resolved, referenceDate);
   }
 }
 
-
 export const mockStore = new EmployeeMockStore();
-

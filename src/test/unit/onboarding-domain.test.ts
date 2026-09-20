@@ -183,9 +183,9 @@ describe('Onboarding Domain Logic', () => {
       expect(normalized[0]?.id).toBe('personal-details');
       expect(normalized[1]?.id).toBe('contract');
       expect(normalized[2]?.id).toBe('equipment');
-      expect(normalized[3]?.id).toBe('first-day-plan');
-      expect(normalized[4]?.id).toBe('accounts');
-      expect(normalized[5]?.id).toBe('manager-introduction');
+      expect(normalized[3]?.id).toBe('accounts');
+      expect(normalized[4]?.id).toBe('manager-introduction');
+      expect(normalized[5]?.id).toBe('first-day-plan');
     });
   });
 

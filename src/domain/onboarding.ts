@@ -1,4 +1,5 @@
-import { Employee, OnboardingTask } from './employee';
+import { Employee, OnboardingTask, OnboardingDetails, EmployeeStatus } from './employee';
+import { getNow, DEFAULT_REFERENCE_DATE } from './clock';
 
 export type OnboardingTaskKey =
   | 'personal-details'
@@ -61,7 +62,10 @@ export const CANONICAL_ONBOARDING_TASKS: readonly CanonicalTaskDefinition[] = [
   },
 ] as const;
 
-export const REFERENCE_DATE = new Date('2026-09-20');
+/**
+ * Historical reference date alias retained for tests and deterministic benchmarks.
+ */
+export const REFERENCE_DATE = DEFAULT_REFERENCE_DATE;
 
 export interface OnboardingProgress {
   total: number;
@@ -81,10 +85,85 @@ export interface OnboardingCounts {
 }
 
 /**
+ * Reconciles tasks against the authoritative canonical onboarding task definitions.
+ * Handles:
+ * - missing canonical tasks (added with completed: false)
+ * - duplicate tasks (deduplicated, prioritizing completed state)
+ * - obsolete tasks (dropped)
+ * - canonical ordering (strictly sorted by canonical definition order)
+ * - preserves completed history and completedAt timestamps for matching keys
+ */
+export function reconcileOnboardingTasks(tasks?: OnboardingTask[]): OnboardingTask[] {
+  const legacyMap: Record<string, OnboardingTaskKey> = {
+    'task-1': 'personal-details',
+    'task-2': 'contract',
+    'task-3': 'equipment',
+    'task-4': 'first-day-plan',
+    'task-5': 'accounts',
+    'task-6': 'manager-introduction',
+    't1': 'personal-details',
+    't2': 'contract',
+    't3': 'equipment',
+    't4': 'first-day-plan',
+    't5': 'accounts',
+    't6': 'manager-introduction',
+  };
+
+  const existingMap = new Map<OnboardingTaskKey, OnboardingTask>();
+
+  if (tasks && tasks.length > 0) {
+    for (const task of tasks) {
+      if (!task || !task.id) continue;
+      const normalizedKey = (legacyMap[task.id] || task.id) as OnboardingTaskKey;
+      const canonicalMatch = CANONICAL_ONBOARDING_TASKS.find((c) => c.key === normalizedKey);
+      if (!canonicalMatch) {
+        // Discard obsolete task
+        continue;
+      }
+
+      const existing = existingMap.get(canonicalMatch.key);
+      if (!existing) {
+        existingMap.set(canonicalMatch.key, {
+          ...task,
+          id: canonicalMatch.key,
+        });
+      } else if (!existing.completed && task.completed) {
+        // Prefer completed state if duplicate exists
+        existingMap.set(canonicalMatch.key, {
+          ...task,
+          id: canonicalMatch.key,
+        });
+      }
+    }
+  }
+
+  // Build sorted list strictly conforming to canonical definition
+  return CANONICAL_ONBOARDING_TASKS.map((canonical) => {
+    const existing = existingMap.get(canonical.key);
+    if (existing) {
+      return {
+        id: canonical.key,
+        title: canonical.title,
+        subtitle: existing.subtitle || canonical.defaultSubtitle,
+        completed: Boolean(existing.completed),
+        completedAt: existing.completed ? existing.completedAt : undefined,
+      };
+    }
+    return {
+      id: canonical.key,
+      title: canonical.title,
+      subtitle: canonical.defaultSubtitle,
+      completed: false,
+    };
+  });
+}
+
+/**
  * Calculates standardized onboarding progress for an employee or task list.
+ * Authoritative total is derived dynamically from canonical task definitions.
  */
 export function calculateOnboardingProgress(tasks?: OnboardingTask[]): OnboardingProgress {
-  const total = 6;
+  const total = CANONICAL_ONBOARDING_TASKS.length;
   if (!tasks || tasks.length === 0) {
     return {
       total,
@@ -95,9 +174,10 @@ export function calculateOnboardingProgress(tasks?: OnboardingTask[]): Onboardin
     };
   }
 
-  const completed = tasks.filter((t) => t.completed).length;
+  const reconciled = reconcileOnboardingTasks(tasks);
+  const completed = reconciled.filter((t) => t.completed).length;
   const remaining = Math.max(0, total - completed);
-  const percent = Math.round((completed / total) * 100);
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return {
     total,
@@ -109,9 +189,48 @@ export function calculateOnboardingProgress(tasks?: OnboardingTask[]): Onboardin
 }
 
 /**
+ * Centralized onboarding lifecycle policy:
+ * - Entering 'onboarding': creates canonical default plan or restores/reconciles existing plan.
+ * - Leaving 'onboarding': retains plan for historical continuity without exposing as active.
+ * - Returning to 'onboarding': restores existing plan without destroying completed task history.
+ */
+export function syncOnboardingPlanOnStatusChange(
+  _previousStatus: EmployeeStatus,
+  nextStatus: EmployeeStatus,
+  existingPlan?: OnboardingDetails
+): OnboardingDetails | undefined {
+  if (nextStatus === 'onboarding') {
+    if (existingPlan && existingPlan.tasks && existingPlan.tasks.length > 0) {
+      const reconciledTasks = reconcileOnboardingTasks(existingPlan.tasks);
+      const progress = calculateOnboardingProgress(reconciledTasks);
+      return {
+        ...existingPlan,
+        tasks: reconciledTasks,
+        totalTasks: progress.total,
+        completedTasks: progress.completed,
+      };
+    }
+    const defaultTasks = createDefaultOnboardingTasks();
+    return {
+      totalTasks: defaultTasks.length,
+      completedTasks: 0,
+      tasks: defaultTasks,
+      responsiblePartner: {
+        name: 'Eleanor Vance',
+        note: 'Assigned People Operations Partner for onboarding setup',
+      },
+      attentionSummary: 'New onboarding workflow initialized. Pending initial account setup.',
+    };
+  }
+
+  // Leaving onboarding or another status: retain the existing plan for history
+  return existingPlan;
+}
+
+/**
  * Returns difference in days between target date and reference date (positive = target is in the future).
  */
-export function getDaysDifference(targetDate: string, referenceDate = REFERENCE_DATE): number {
+export function getDaysDifference(targetDate: string, referenceDate: Date = getNow()): number {
   const ref = new Date(referenceDate);
   ref.setHours(0, 0, 0, 0);
 
@@ -125,7 +244,7 @@ export function getDaysDifference(targetDate: string, referenceDate = REFERENCE_
 /**
  * Checks if an employee is starting soon (start date is within upcoming 14 days: 0 <= diffDays <= 14).
  */
-export function isStartingSoon(startDate: string, referenceDate = REFERENCE_DATE): boolean {
+export function isStartingSoon(startDate: string, referenceDate: Date = getNow()): boolean {
   const diffDays = getDaysDifference(startDate, referenceDate);
   return diffDays >= 0 && diffDays <= 14;
 }
@@ -133,7 +252,7 @@ export function isStartingSoon(startDate: string, referenceDate = REFERENCE_DATE
 /**
  * Checks if employee start date has already passed or is today (diffDays <= 0).
  */
-export function isStarted(startDate: string, referenceDate = REFERENCE_DATE): boolean {
+export function isStarted(startDate: string, referenceDate: Date = getNow()): boolean {
   const diffDays = getDaysDifference(startDate, referenceDate);
   return diffDays <= 0;
 }
@@ -141,7 +260,7 @@ export function isStarted(startDate: string, referenceDate = REFERENCE_DATE): bo
 /**
  * Formats relative start date urgency description.
  */
-export function formatStartUrgency(startDate: string, referenceDate = REFERENCE_DATE): string {
+export function formatStartUrgency(startDate: string, referenceDate: Date = getNow()): string {
   const diffDays = getDaysDifference(startDate, referenceDate);
 
   if (diffDays === 0) {
@@ -161,10 +280,9 @@ export function formatStartUrgency(startDate: string, referenceDate = REFERENCE_
 
 /**
  * Determines if an employee needs attention in onboarding:
- * Must have status === 'onboarding' (or active onboarding workflow),
- * has incomplete tasks, and start date is either upcoming soon (<= 14 days) or already started.
+ * Must have status === 'onboarding', incomplete tasks, and start date within 14 days (or already started).
  */
-export function needsAttention(employee: Employee, referenceDate = REFERENCE_DATE): boolean {
+export function needsAttention(employee: Employee, referenceDate: Date = getNow()): boolean {
   if (employee.employment.status !== 'onboarding') {
     return false;
   }
@@ -175,22 +293,20 @@ export function needsAttention(employee: Employee, referenceDate = REFERENCE_DAT
   }
 
   const diffDays = getDaysDifference(employee.employment.startDate, referenceDate);
-  // Starts within next 14 days or already started
   return diffDays <= 14;
 }
 
 /**
  * Filters a list of onboarding employees by view tab.
+ * Strictly checks `employment.status === 'onboarding'` so retained plans for active/leave/offboarded
+ * employees do NOT pollute the active onboarding workspace.
  */
 export function filterOnboardingEmployees(
   employees: Employee[],
   tab: OnboardingTab,
-  referenceDate = REFERENCE_DATE
+  referenceDate: Date = getNow()
 ): Employee[] {
-  // Only consider employees with status 'onboarding' or who have onboarding details
-  const onboardingPool = employees.filter(
-    (e) => e.employment.status === 'onboarding' || !!e.onboarding
-  );
+  const onboardingPool = employees.filter((e) => e.employment.status === 'onboarding');
 
   switch (tab) {
     case 'attention':
@@ -214,11 +330,9 @@ export function filterOnboardingEmployees(
  */
 export function calculateOnboardingCounts(
   employees: Employee[],
-  referenceDate = REFERENCE_DATE
+  referenceDate: Date = getNow()
 ): OnboardingCounts {
-  const onboardingPool = employees.filter(
-    (e) => e.employment.status === 'onboarding' || !!e.onboarding
-  );
+  const onboardingPool = employees.filter((e) => e.employment.status === 'onboarding');
 
   let attention = 0;
   let startingSoon = 0;
@@ -245,7 +359,7 @@ export function calculateOnboardingCounts(
 }
 
 /**
- * Creates default canonical 6 onboarding tasks for a new onboarding workflow.
+ * Creates default canonical onboarding tasks for a new onboarding workflow.
  */
 export function createDefaultOnboardingTasks(): OnboardingTask[] {
   return CANONICAL_ONBOARDING_TASKS.map((task) => ({
@@ -257,48 +371,8 @@ export function createDefaultOnboardingTasks(): OnboardingTask[] {
 }
 
 /**
- * Standardizes or migrates legacy task IDs (e.g. 'task-1' -> 'personal-details') if necessary.
+ * Standardizes or migrates legacy task IDs if necessary, delegating to canonical reconciliation.
  */
 export function normalizeOnboardingTasks(tasks?: OnboardingTask[]): OnboardingTask[] {
-  if (!tasks || tasks.length === 0) {
-    return createDefaultOnboardingTasks();
-  }
-
-  const legacyMap: Record<string, OnboardingTaskKey> = {
-    'task-1': 'personal-details',
-    'task-2': 'contract',
-    'task-3': 'equipment',
-    'task-4': 'first-day-plan',
-    'task-5': 'accounts',
-    'task-6': 'manager-introduction',
-    't1': 'personal-details',
-    't2': 'contract',
-    't3': 'equipment',
-    't4': 'first-day-plan',
-    't5': 'accounts',
-    't6': 'manager-introduction',
-  };
-
-  return tasks.map((task) => {
-    let key = task.id as OnboardingTaskKey;
-    const directMap = legacyMap[task.id];
-    if (directMap) {
-      key = directMap;
-    } else {
-      const prefix = task.id.split('-')[0];
-      const prefixMap = prefix ? legacyMap[prefix] : undefined;
-      if (prefixMap) {
-        key = prefixMap;
-      }
-    }
-
-    const canonical = CANONICAL_ONBOARDING_TASKS.find((c) => c.key === key);
-    return {
-      id: key,
-      title: canonical?.title || task.title,
-      subtitle: task.subtitle || canonical?.defaultSubtitle || '',
-      completed: task.completed,
-      completedAt: task.completedAt,
-    };
-  });
+  return reconcileOnboardingTasks(tasks);
 }

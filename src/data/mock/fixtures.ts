@@ -117,6 +117,7 @@ const canonicalEmployees: Employee[] = [
       employmentType: 'full-time',
       status: 'active',
       startDate: '2024-03-12',
+      managerId: 'EMP-0005',
       manager: {
         id: 'EMP-0005',
         name: 'Alexandre Roy',
@@ -150,6 +151,7 @@ const canonicalEmployees: Employee[] = [
       employmentType: 'full-time',
       status: 'onboarding',
       startDate: '2026-09-24',
+      managerId: 'EMP-0102',
       manager: {
         id: 'EMP-0102',
         name: 'Amelia Carter',
@@ -391,6 +393,7 @@ const canonicalEmployees: Employee[] = [
 
 export function generateDeterministicEmployees(): Employee[] {
   const result: Employee[] = [...canonicalEmployees];
+  const usedIds = new Set(canonicalEmployees.map((e) => e.id.toLowerCase()));
 
   // We have 8 canonical employees:
   // 1 is onboarding (Noah) -> need 5 more onboarding to make 6
@@ -402,7 +405,17 @@ export function generateDeterministicEmployees(): Employee[] {
   let contractorsRemaining = 28;
   let newStartersRemaining = 13;
 
-  for (let i = 9; i <= 428; i++) {
+  let idCounter = 1;
+
+  for (let count = 0; count < 420; count++) {
+    const i = count + 9;
+    while (usedIds.has(`emp-${String(idCounter).padStart(4, '0')}`)) {
+      idCounter++;
+    }
+    const currentId = `EMP-${String(idCounter).padStart(4, '0')}`;
+    usedIds.add(currentId.toLowerCase());
+    idCounter++;
+
     const fn = pick(firstNames);
     const ln = pick(lastNames);
     const dept = departments[(i - 1) % departments.length]!;
@@ -459,10 +472,9 @@ export function generateDeterministicEmployees(): Employee[] {
     }
 
     const email = `${fn.toLowerCase()}.${ln.toLowerCase()}${i}@company.com`;
-    const paddedId = String(i).padStart(4, '0');
 
     result.push({
-      id: `EMP-${paddedId}`,
+      id: currentId,
       person: {
         firstName: fn,
         lastName: ln,
@@ -483,6 +495,7 @@ export function generateDeterministicEmployees(): Employee[] {
         employmentType: empType,
         status,
         startDate,
+        managerId: 'EMP-0102',
         manager: {
           id: 'EMP-0102',
           name: 'Amelia Carter',
@@ -501,3 +514,11 @@ export function generateDeterministicEmployees(): Employee[] {
 }
 
 export const deterministicEmployees: Employee[] = generateDeterministicEmployees();
+
+/**
+ * Creates a clean, isolated deep clone of the baseline fixture employees.
+ * Guarantees that mutations will never alter imported fixture objects in memory.
+ */
+export function createBaselineEmployees(): Employee[] {
+  return structuredClone(deterministicEmployees);
+}

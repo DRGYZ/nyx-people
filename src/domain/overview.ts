@@ -1,11 +1,13 @@
-import { Employee, Department } from './employee';
+import { Employee, Department, EmployeeStatus } from './employee';
+import { getNow, DEFAULT_REFERENCE_DATE } from './clock';
 import {
-  REFERENCE_DATE,
   needsAttention,
   isStartingSoon,
   formatStartUrgency,
   calculateOnboardingProgress,
 } from './onboarding';
+
+export { DEFAULT_REFERENCE_DATE as REFERENCE_DATE };
 
 export interface OverviewAttentionItem {
   id: string;
@@ -56,11 +58,24 @@ export interface OverviewData {
 }
 
 /**
+ * Centrally defined eligible statuses for upcoming starts.
+ * Excludes employees in 'offboarded' or 'leave' status from starting soon queues.
+ */
+export const UPCOMING_STARTS_ELIGIBLE_STATUSES: readonly EmployeeStatus[] = [
+  'active',
+  'onboarding',
+] as const;
+
+export function isEligibleForUpcomingStarts(employee: Employee): boolean {
+  return UPCOMING_STARTS_ELIGIBLE_STATUSES.includes(employee.employment.status);
+}
+
+/**
  * Formats a relative updated string based on real persisted updatedAt timestamps.
  */
 export function formatRelativeUpdated(
   updatedAtIso: string,
-  referenceDate: Date = REFERENCE_DATE
+  referenceDate: Date = getNow()
 ): string {
   if (!updatedAtIso) return 'Recently';
 
@@ -92,7 +107,7 @@ export function formatRelativeUpdated(
  */
 export function getAttentionEmployees(
   employees: Employee[],
-  referenceDate: Date = REFERENCE_DATE
+  referenceDate: Date = getNow()
 ): OverviewAttentionItem[] {
   const attentionEmployees = employees.filter((emp) => needsAttention(emp, referenceDate));
 
@@ -123,13 +138,14 @@ export function getAttentionEmployees(
 
 /**
  * Returns employees scheduled to start within the next 14 days.
+ * Excludes ineligible lifecycle statuses (such as offboarded and leave).
  */
 export function getUpcomingStarts(
   employees: Employee[],
-  referenceDate: Date = REFERENCE_DATE
+  referenceDate: Date = getNow()
 ): OverviewUpcomingItem[] {
-  const upcoming = employees.filter((emp) =>
-    isStartingSoon(emp.employment.startDate, referenceDate)
+  const upcoming = employees.filter(
+    (emp) => isEligibleForUpcomingStarts(emp) && isStartingSoon(emp.employment.startDate, referenceDate)
   );
 
   // Sort by start date ascending (earliest start date first)
@@ -168,7 +184,7 @@ export function getUpcomingStarts(
 export function getRecentlyUpdatedEmployees(
   employees: Employee[],
   limit: number = 5,
-  referenceDate: Date = REFERENCE_DATE
+  referenceDate: Date = getNow()
 ): OverviewRecentItem[] {
   const copy = [...employees];
 
@@ -221,7 +237,7 @@ export function getWorkforceSnapshot(employees: Employee[]): OverviewSnapshot {
  */
 export function deriveOverviewData(
   employees: Employee[],
-  referenceDate: Date = REFERENCE_DATE
+  referenceDate: Date = getNow()
 ): OverviewData {
   return {
     attention: getAttentionEmployees(employees, referenceDate),

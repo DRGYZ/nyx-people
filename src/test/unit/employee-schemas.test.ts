@@ -75,16 +75,15 @@ describe('Employee Validation Schemas', () => {
     }
   });
 
-  it('rejects date of birth for an applicant under 16 years old', () => {
-    // Current year is 2026, so a birth year of 2015 is ~11 years old
+  it('rejects date of birth before sanity floor year 1900', () => {
     const result = EmployeeCreateInputSchema.safeParse({
       ...validEmployeeInput,
-      dateOfBirth: '2015-05-01',
+      dateOfBirth: '1899-05-01',
     });
     expect(result.success).toBe(false);
     if (!result.success) {
       const messages = result.error.issues.map((i) => i.message);
-      expect(messages).toContain('Employee must be at least 16 years old');
+      expect(messages).toContain('Date of birth year must be 1900 or later');
     }
   });
 
