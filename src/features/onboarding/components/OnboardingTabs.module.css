@@ -32,6 +32,12 @@
   color: var(--text-primary);
 }
 
+.tabButton:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
 .tabButton.active {
   color: var(--text-primary);
   font-weight: 600;

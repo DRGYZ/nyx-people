@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { OnboardingTab, OnboardingCounts } from '@/domain/onboarding';
 import styles from './OnboardingTabs.module.css';
 
@@ -35,24 +35,58 @@ export const OnboardingTabs: React.FC<OnboardingTabsProps> = ({
     },
   ];
 
+  const tabRefs = useRef<Map<OnboardingTab, HTMLButtonElement>>(new Map());
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let nextIndex = index;
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      nextIndex = (index + 1) % tabs.length;
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      nextIndex = (index - 1 + tabs.length) % tabs.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = tabs.length - 1;
+    } else {
+      return;
+    }
+
+    const nextTab = tabs[nextIndex];
+    if (nextTab) {
+      onTabChange(nextTab.id);
+      const btn = tabRefs.current.get(nextTab.id);
+      btn?.focus();
+    }
+  };
+
   return (
     <div
       className={styles.tabsContainer}
       role="tablist"
       aria-label="Onboarding workspace filter views"
     >
-      {tabs.map((tab) => {
+      {tabs.map((tab, index) => {
         const isActive = activeTab === tab.id;
         return (
           <button
             key={tab.id}
+            ref={(el) => {
+              if (el) tabRefs.current.set(tab.id, el);
+              else tabRefs.current.delete(tab.id);
+            }}
             id={`onboarding-tab-${tab.id}`}
             role="tab"
             aria-selected={isActive}
             aria-controls={`onboarding-panel-${tab.id}`}
+            tabIndex={isActive ? 0 : -1}
             type="button"
             className={`${styles.tabButton} ${isActive ? styles.active : ''}`}
             onClick={() => onTabChange(tab.id)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
           >
             <span>{tab.label}</span>
             <span

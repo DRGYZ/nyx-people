@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useBlocker } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, AlertCircle, Loader2 } from 'lucide-react';
@@ -16,6 +17,7 @@ import { getNow } from '@/domain/clock';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectOption } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ManagerCombobox } from './ManagerCombobox';
 import { FormErrorSummary, FormErrorItem } from './FormErrorSummary';
 import styles from './EmployeeForm.module.css';
@@ -91,6 +93,9 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   onCancel,
   mode,
 }) => {
+  const [isSubmitSuccessful, setIsSubmitSuccessful] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+
   const defaultValues: EmployeeCreateInput = {
     firstName: initialData?.person.firstName || '',
     lastName: initialData?.person.lastName || '',
@@ -122,10 +127,22 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     mode: 'onBlur',
   });
 
-  // Warn before browser unload if form is dirty
+  const isSubmittingRef = useRef(false);
+
+  // Block in-app SPA navigation when form is dirty and not submitting/submitted
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty &&
+      !isSubmitting &&
+      !isSubmittingRef.current &&
+      !isSubmitSuccessful &&
+      currentLocation.pathname !== nextLocation.pathname
+  );
+
+  // Warn before browser unload (tab close / refresh) if form is dirty
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
+      if (isDirty && !isSubmitting && !isSubmittingRef.current && !isSubmitSuccessful) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -134,16 +151,27 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isDirty]);
+  }, [isDirty, isSubmitting, isSubmitSuccessful]);
 
   const handleCancel = () => {
     if (isDirty) {
-      const confirmLeave = window.confirm(
-        'You have unsaved changes. Are you sure you want to discard them?'
-      );
-      if (!confirmLeave) return;
+      setShowCancelDialog(true);
+      return;
     }
+    isSubmittingRef.current = true;
     onCancel();
+  };
+
+  const handleFormSubmit = async (values: EmployeeCreateInput) => {
+    isSubmittingRef.current = true;
+    try {
+      setIsSubmitSuccessful(true);
+      await onSubmit(values);
+    } catch (err) {
+      isSubmittingRef.current = false;
+      setIsSubmitSuccessful(false);
+      throw err;
+    }
   };
 
   const handleFocusField = (field: string) => {
@@ -164,9 +192,34 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     }));
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form className={styles.form} onSubmit={handleSubmit(handleFormSubmit)} noValidate>
       {/* Top Error Summary */}
       <FormErrorSummary errors={errorSummaryItems} onFocusField={handleFocusField} />
+
+      {/* Accessible in-app confirmation dialog for unsaved changes */}
+      <ConfirmDialog
+        open={blocker.state === 'blocked' || showCancelDialog}
+        title="Unsaved changes"
+        description="You have unsaved changes. Leave this page and discard them?"
+        confirmLabel="Leave without saving"
+        cancelLabel="Stay"
+        destructive
+        onConfirm={() => {
+          isSubmittingRef.current = true;
+          if (blocker.state === 'blocked') {
+            blocker.proceed();
+          } else {
+            setShowCancelDialog(false);
+            onCancel();
+          }
+        }}
+        onCancel={() => {
+          if (blocker.state === 'blocked') {
+            blocker.reset();
+          }
+          setShowCancelDialog(false);
+        }}
+      />
 
       {/* Server / API Conflict Error Banner */}
       {serverError && (
@@ -200,7 +253,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.firstName ? 'field-firstName-error' : undefined}
             />
             {errors.firstName && (
-              <span id="field-firstName-error" className={styles.fieldError} role="alert">
+              <span id="field-firstName-error" className={styles.fieldError}>
                 {errors.firstName.message}
               </span>
             )}
@@ -220,7 +273,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.lastName ? 'field-lastName-error' : undefined}
             />
             {errors.lastName && (
-              <span id="field-lastName-error" className={styles.fieldError} role="alert">
+              <span id="field-lastName-error" className={styles.fieldError}>
                 {errors.lastName.message}
               </span>
             )}
@@ -241,7 +294,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.preferredName ? 'field-preferredName-error' : undefined}
             />
             {errors.preferredName && (
-              <span id="field-preferredName-error" className={styles.fieldError} role="alert">
+              <span id="field-preferredName-error" className={styles.fieldError}>
                 {errors.preferredName.message}
               </span>
             )}
@@ -266,7 +319,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               Must be at least 16 years old (YYYY-MM-DD)
             </span>
             {errors.dateOfBirth && (
-              <span id="field-dateOfBirth-error" className={styles.fieldError} role="alert">
+              <span id="field-dateOfBirth-error" className={styles.fieldError}>
                 {errors.dateOfBirth.message}
               </span>
             )}
@@ -299,7 +352,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.email ? 'field-email-error' : undefined}
             />
             {errors.email && (
-              <span id="field-email-error" className={styles.fieldError} role="alert">
+              <span id="field-email-error" className={styles.fieldError}>
                 {errors.email.message}
               </span>
             )}
@@ -320,7 +373,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.phone ? 'field-phone-error' : undefined}
             />
             {errors.phone && (
-              <span id="field-phone-error" className={styles.fieldError} role="alert">
+              <span id="field-phone-error" className={styles.fieldError}>
                 {errors.phone.message}
               </span>
             )}
@@ -341,7 +394,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
             aria-describedby={errors.street ? 'field-street-error' : undefined}
           />
           {errors.street && (
-            <span id="field-street-error" className={styles.fieldError} role="alert">
+            <span id="field-street-error" className={styles.fieldError}>
               {errors.street.message}
             </span>
           )}
@@ -362,7 +415,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.city ? 'field-city-error' : undefined}
             />
             {errors.city && (
-              <span id="field-city-error" className={styles.fieldError} role="alert">
+              <span id="field-city-error" className={styles.fieldError}>
                 {errors.city.message}
               </span>
             )}
@@ -382,7 +435,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.postalCode ? 'field-postalCode-error' : undefined}
             />
             {errors.postalCode && (
-              <span id="field-postalCode-error" className={styles.fieldError} role="alert">
+              <span id="field-postalCode-error" className={styles.fieldError}>
                 {errors.postalCode.message}
               </span>
             )}
@@ -402,7 +455,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.country ? 'field-country-error' : undefined}
             />
             {errors.country && (
-              <span id="field-country-error" className={styles.fieldError} role="alert">
+              <span id="field-country-error" className={styles.fieldError}>
                 {errors.country.message}
               </span>
             )}
@@ -434,7 +487,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.jobTitle ? 'field-jobTitle-error' : undefined}
             />
             {errors.jobTitle && (
-              <span id="field-jobTitle-error" className={styles.fieldError} role="alert">
+              <span id="field-jobTitle-error" className={styles.fieldError}>
                 {errors.jobTitle.message}
               </span>
             )}
@@ -462,7 +515,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               )}
             />
             {errors.department && (
-              <span id="field-department-error" className={styles.fieldError} role="alert">
+              <span id="field-department-error" className={styles.fieldError}>
                 {errors.department.message}
               </span>
             )}
@@ -492,7 +545,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               )}
             />
             {errors.location && (
-              <span id="field-location-error" className={styles.fieldError} role="alert">
+              <span id="field-location-error" className={styles.fieldError}>
                 {errors.location.message}
               </span>
             )}
@@ -520,7 +573,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               )}
             />
             {errors.employmentType && (
-              <span id="field-employmentType-error" className={styles.fieldError} role="alert">
+              <span id="field-employmentType-error" className={styles.fieldError}>
                 {errors.employmentType.message}
               </span>
             )}
@@ -550,7 +603,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               )}
             />
             {errors.status && (
-              <span id="field-status-error" className={styles.fieldError} role="alert">
+              <span id="field-status-error" className={styles.fieldError}>
                 {errors.status.message}
               </span>
             )}
@@ -570,7 +623,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               aria-describedby={errors.startDate ? 'field-startDate-error' : undefined}
             />
             {errors.startDate && (
-              <span id="field-startDate-error" className={styles.fieldError} role="alert">
+              <span id="field-startDate-error" className={styles.fieldError}>
                 {errors.startDate.message}
               </span>
             )}
@@ -597,7 +650,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
             )}
           />
           {errors.managerId && (
-            <span id="field-managerId-error" className={styles.fieldError} role="alert">
+            <span id="field-managerId-error" className={styles.fieldError}>
               {errors.managerId.message}
             </span>
           )}

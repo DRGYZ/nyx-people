@@ -26,7 +26,7 @@ export const NewEmployeePage: React.FC = () => {
   };
 
   return (
-    <main className={styles.container}>
+    <div className={styles.container}>
       <header className={styles.header}>
         <Link to="/employees" className={styles.backLink} aria-label="Return to directory">
           <ArrowLeft size={16} aria-hidden="true" />
@@ -45,6 +45,6 @@ export const NewEmployeePage: React.FC = () => {
         serverError={serverError}
         onCancel={() => navigate('/employees')}
       />
-    </main>
+    </div>
   );
 };

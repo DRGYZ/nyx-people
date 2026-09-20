@@ -66,20 +66,20 @@ export const EditEmployeePage: React.FC = () => {
 
   if (loading) {
     return (
-      <main className={styles.container}>
+      <div className={styles.container}>
         <div className={styles.loadingSkeleton}>
           <Skeleton width="120px" height="20px" />
           <Skeleton width="300px" height="36px" />
           <Skeleton width="100%" height="220px" />
           <Skeleton width="100%" height="220px" />
         </div>
-      </main>
+      </div>
     );
   }
 
   if (loadError || !employee) {
     return (
-      <main className={styles.container}>
+      <div className={styles.container}>
         <div className={styles.errorState}>
           <h2 className={styles.errorTitle}>Employee Not Found</h2>
           <p className={styles.errorText}>
@@ -89,14 +89,14 @@ export const EditEmployeePage: React.FC = () => {
             Return to Employees
           </Button>
         </div>
-      </main>
+      </div>
     );
   }
 
   const fullName = `${employee.person.firstName} ${employee.person.lastName}`;
 
   return (
-    <main className={styles.container}>
+    <div className={styles.container}>
       <header className={styles.header}>
         <Link
           to={`/employees/${employee.id}`}
@@ -121,6 +121,6 @@ export const EditEmployeePage: React.FC = () => {
         serverError={serverError}
         onCancel={() => navigate(`/employees/${employee.id}`)}
       />
-    </main>
+    </div>
   );
 };

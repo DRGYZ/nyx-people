@@ -13,7 +13,6 @@ export const LifecycleMarker: React.FC<LifecycleMarkerProps> = ({
   status,
   size = 'md',
   className = '',
-  ariaLabel,
 }) => {
   const sizeClass =
     size === 'sm' ? styles.sizeSm : size === 'lg' ? styles.sizeLg : styles.sizeMd;
@@ -22,8 +21,7 @@ export const LifecycleMarker: React.FC<LifecycleMarkerProps> = ({
   return (
     <span
       className={`${styles.marker} ${statusClass} ${sizeClass} ${className}`}
-      role="presentation"
-      aria-label={ariaLabel}
+      aria-hidden="true"
     />
   );
 };

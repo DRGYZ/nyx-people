@@ -94,6 +94,7 @@ export const OnboardingPage: React.FC = () => {
           id={`onboarding-panel-${validTab}`}
           role="tabpanel"
           aria-labelledby={`onboarding-tab-${validTab}`}
+          tabIndex={0}
         >
           {data.data.length === 0 ? (
             <OnboardingEmptyState tab={validTab} onResetToAll={() => handleTabChange('all')} />

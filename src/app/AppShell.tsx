@@ -1,12 +1,39 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { BRAND_NAME, DEMO_USER } from './config';
 import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
 import styles from './AppShell.module.css';
 
 export const AppShell: React.FC = () => {
+  const location = useLocation();
+  const isFirstRender = useRef(true);
+
+  // Manage route focus on client-side navigation
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // Prioritize focusing the main heading (h1) of the new page, or fallback to main-content
+    const mainEl = document.getElementById('main-content');
+    const h1El = mainEl?.querySelector('h1') as HTMLElement | null;
+
+    if (h1El) {
+      h1El.setAttribute('tabindex', '-1');
+      h1El.focus();
+    } else if (mainEl) {
+      mainEl.setAttribute('tabindex', '-1');
+      mainEl.focus();
+    }
+  }, [location.pathname]);
+
   return (
     <div className={styles.shell}>
+      <a href="#main-content" className={styles.skipLink}>
+        Skip to main content
+      </a>
+
       <header className={styles.topNav} role="banner">
         <div className={styles.navContainer}>
           <div className={styles.leftGroup}>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { AppShell } from '@/app/AppShell';
 import { EmployeesPage } from '@/routes/employees/EmployeesPage';
 import { EmployeeProfilePage } from '@/routes/employees/EmployeeProfilePage';
@@ -18,24 +18,32 @@ export function renderWithRouter(
   ui?: React.ReactElement,
   { initialEntries = ['/employees'], ...options }: RenderWithRouterOptions = {}
 ) {
-  const defaultUi = (
-    <Routes>
-      <Route path="/" element={<AppShell />}>
-        <Route path="overview" element={<OverviewPage />} />
-        <Route path="employees" element={<EmployeesPage />} />
-        <Route path="employees/new" element={<NewEmployeePage />} />
-        <Route path="employees/:employeeId" element={<EmployeeProfilePage />} />
-        <Route path="employees/:employeeId/edit" element={<EditEmployeePage />} />
-        <Route path="employees/:employeeId/onboarding" element={<EmployeeOnboardingPage />} />
-        <Route path="onboarding" element={<OnboardingPage />} />
-      </Route>
-    </Routes>
-  );
+  const routes = ui
+    ? [
+        {
+          path: '*',
+          element: ui,
+        },
+      ]
+    : [
+        {
+          path: '/',
+          element: <AppShell />,
+          children: [
+            { path: 'overview', element: <OverviewPage /> },
+            { path: 'employees', element: <EmployeesPage /> },
+            { path: 'employees/new', element: <NewEmployeePage /> },
+            { path: 'employees/:employeeId', element: <EmployeeProfilePage /> },
+            { path: 'employees/:employeeId/edit', element: <EditEmployeePage /> },
+            { path: 'employees/:employeeId/onboarding', element: <EmployeeOnboardingPage /> },
+            { path: 'onboarding', element: <OnboardingPage /> },
+          ],
+        },
+      ];
 
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      {ui || defaultUi}
-    </MemoryRouter>,
-    options
-  );
+  const router = createMemoryRouter(routes, {
+    initialEntries,
+  });
+
+  return render(<RouterProvider router={router} />, options);
 }
