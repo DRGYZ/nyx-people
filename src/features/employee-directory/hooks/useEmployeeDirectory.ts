@@ -35,6 +35,7 @@ export function useEmployeeDirectory(params: DirectoryQueryParams) {
         setLoading(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- explicitly list primitive properties to prevent reference thrashing
   }, [
     params.q,
     params.department,

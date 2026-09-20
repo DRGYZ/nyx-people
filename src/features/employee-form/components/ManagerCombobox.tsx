@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useId } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { Search, ChevronDown, Check, X } from 'lucide-react';
-import { fetchManagers } from '@/data/api-client';
+import { fetchManagers, isAbortError } from '@/data/api-client';
 import { EmployeeManagerOption } from '@/data/contracts';
 import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
 import styles from './ManagerCombobox.module.css';
@@ -47,11 +47,13 @@ export const ManagerCombobox: React.FC<ManagerComboboxProps> = ({
       setLoading(true);
       fetchManagers(query, excludeEmployeeId, controller.signal)
         .then((data) => {
-          setManagers(data);
-          setLoading(false);
+          if (!controller.signal.aborted) {
+            setManagers(data);
+            setLoading(false);
+          }
         })
         .catch((err) => {
-          if (err?.name !== 'AbortError') {
+          if (!isAbortError(err) && !controller.signal.aborted) {
             console.warn('Failed to load managers:', err);
             setLoading(false);
           }

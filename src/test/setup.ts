@@ -12,7 +12,7 @@ if (OriginalRequest) {
           super(input, init);
         } catch (err: any) {
           if (err?.message?.includes('AbortSignal') || err?.name === 'TypeError') {
-            const { signal, ...restInit } = init;
+            const { signal: _signal, ...restInit } = init;
             super(input, restInit);
             return;
           }

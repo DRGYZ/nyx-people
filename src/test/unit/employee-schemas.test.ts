@@ -113,7 +113,7 @@ describe('Employee Validation Schemas', () => {
   });
 
   it('allows optional preferredName and managerId to be omitted', () => {
-    const { preferredName, managerId, ...minimalValid } = validEmployeeInput;
+    const { preferredName: _preferredName, managerId: _managerId, ...minimalValid } = validEmployeeInput;
     const result = EmployeeCreateInputSchema.safeParse(minimalValid);
     expect(result.success).toBe(true);
     if (result.success) {

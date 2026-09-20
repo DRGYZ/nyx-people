@@ -260,7 +260,7 @@ describe('Phase C: Routing, URL State, Request Consistency, and API Contracts', 
 
       // While in flight, all checkboxes must be disabled to serialize requests
       await waitFor(() => {
-        checkboxes.forEach((cb) => {
+        checkboxes.forEach((cb: Element) => {
           expect(cb).toBeDisabled();
         });
       });

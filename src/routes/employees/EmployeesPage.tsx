@@ -12,9 +12,11 @@ import { DirectorySkeleton } from '@/features/employee-directory/components/Dire
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
 import { ColumnToggleOption } from '@/components/ui/DropdownMenu';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import styles from './EmployeesPage.module.css';
 
 export const EmployeesPage: React.FC = () => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const {
     queryParams,
     updateQueryParams,
@@ -140,26 +142,28 @@ export const EmployeesPage: React.FC = () => {
         )
       ) : response ? (
         <>
-          {/* Desktop & Tablet Table */}
-          <div className={styles.tableView}>
-            <EmployeeTable
-              data={response.data}
-              sortBy={queryParams.sortBy}
-              sortDir={queryParams.sortDir}
-              onSort={handleSort}
-              currentQueryString={currentQueryString}
-              columnVisibility={columnVisibility}
-              onColumnVisibilityChange={setColumnVisibility}
-            />
-          </div>
-
-          {/* Mobile Structured Vertical List (<768px) */}
-          <div className={styles.mobileView}>
-            <EmployeeMobileList
-              data={response.data}
-              currentQueryString={currentQueryString}
-            />
-          </div>
+          {isMobile ? (
+            /* Mobile Structured Vertical List (<768px) */
+            <div className={styles.mobileView}>
+              <EmployeeMobileList
+                data={response.data}
+                currentQueryString={currentQueryString}
+              />
+            </div>
+          ) : (
+            /* Desktop & Tablet Table */
+            <div className={styles.tableView}>
+              <EmployeeTable
+                data={response.data}
+                sortBy={queryParams.sortBy}
+                sortDir={queryParams.sortDir}
+                onSort={handleSort}
+                currentQueryString={currentQueryString}
+                columnVisibility={columnVisibility}
+                onColumnVisibilityChange={setColumnVisibility}
+              />
+            </div>
+          )}
 
           <PaginationControls
             currentPage={response.page}

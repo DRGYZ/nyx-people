@@ -1,31 +1,64 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, Suspense } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { BRAND_NAME, DEMO_USER } from './config';
 import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
+import { RouteLoadingFallback } from '@/components/ui/RouteLoadingFallback';
 import styles from './AppShell.module.css';
 
 export const AppShell: React.FC = () => {
   const location = useLocation();
   const isFirstRender = useRef(true);
 
-  // Manage route focus on client-side navigation
+  // Manage route focus on client-side navigation (supports lazy route chunks)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
 
-    // Prioritize focusing the main heading (h1) of the new page, or fallback to main-content
-    const mainEl = document.getElementById('main-content');
-    const h1El = mainEl?.querySelector('h1') as HTMLElement | null;
+    let isDisposed = false;
 
-    if (h1El) {
-      h1El.setAttribute('tabindex', '-1');
-      h1El.focus();
-    } else if (mainEl) {
-      mainEl.setAttribute('tabindex', '-1');
-      mainEl.focus();
+    const attemptFocus = () => {
+      if (isDisposed) return false;
+      const mainEl = document.getElementById('main-content');
+      const h1El = mainEl?.querySelector('h1') as HTMLElement | null;
+
+      if (h1El) {
+        h1El.setAttribute('tabindex', '-1');
+        h1El.focus();
+        return true;
+      }
+      return false;
+    };
+
+    if (!attemptFocus()) {
+      const intervalId = setInterval(() => {
+        if (attemptFocus()) {
+          clearInterval(intervalId);
+        }
+      }, 50);
+
+      const timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
+        if (!isDisposed) {
+          const mainEl = document.getElementById('main-content');
+          if (mainEl && !mainEl.contains(document.activeElement)) {
+            mainEl.setAttribute('tabindex', '-1');
+            mainEl.focus();
+          }
+        }
+      }, 600);
+
+      return () => {
+        isDisposed = true;
+        clearInterval(intervalId);
+        clearTimeout(timeoutId);
+      };
     }
+
+    return () => {
+      isDisposed = true;
+    };
   }, [location.pathname]);
 
   return (
@@ -89,7 +122,9 @@ export const AppShell: React.FC = () => {
       </header>
 
       <main className={styles.mainContent} id="main-content">
-        <Outlet />
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

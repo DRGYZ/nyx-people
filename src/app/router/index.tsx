@@ -1,14 +1,31 @@
+import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/app/AppShell';
-import { EmployeesPage } from '@/routes/employees/EmployeesPage';
-import { EmployeeProfilePage } from '@/routes/employees/EmployeeProfilePage';
-import { NewEmployeePage } from '@/routes/employees/NewEmployeePage';
-import { EditEmployeePage } from '@/routes/employees/EditEmployeePage';
-import { OnboardingPage } from '@/routes/onboarding/OnboardingPage';
-import { EmployeeOnboardingPage } from '@/routes/onboarding/EmployeeOnboardingPage';
 
-import { OverviewPage } from '@/routes/overview/OverviewPage';
-import { NotFoundPage } from '@/routes/not-found/NotFoundPage';
+const OverviewPage = React.lazy(() =>
+  import('@/routes/overview/OverviewPage').then((m) => ({ default: m.OverviewPage }))
+);
+const EmployeesPage = React.lazy(() =>
+  import('@/routes/employees/EmployeesPage').then((m) => ({ default: m.EmployeesPage }))
+);
+const NewEmployeePage = React.lazy(() =>
+  import('@/routes/employees/NewEmployeePage').then((m) => ({ default: m.NewEmployeePage }))
+);
+const EmployeeProfilePage = React.lazy(() =>
+  import('@/routes/employees/EmployeeProfilePage').then((m) => ({ default: m.EmployeeProfilePage }))
+);
+const EditEmployeePage = React.lazy(() =>
+  import('@/routes/employees/EditEmployeePage').then((m) => ({ default: m.EditEmployeePage }))
+);
+const EmployeeOnboardingPage = React.lazy(() =>
+  import('@/routes/onboarding/EmployeeOnboardingPage').then((m) => ({ default: m.EmployeeOnboardingPage }))
+);
+const OnboardingPage = React.lazy(() =>
+  import('@/routes/onboarding/OnboardingPage').then((m) => ({ default: m.OnboardingPage }))
+);
+const NotFoundPage = React.lazy(() =>
+  import('@/routes/not-found/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
+);
 
 export const router = createBrowserRouter([
   {

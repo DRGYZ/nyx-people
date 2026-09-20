@@ -8,24 +8,17 @@
 
 .tableView {
   display: block;
+  width: 100%;
 }
 
 .mobileView {
-  display: none;
+  display: block;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
   .container {
     padding: 20px 16px 48px;
     overflow-x: hidden;
-  }
-
-  .tableView {
-    display: none;
-  }
-
-  .mobileView {
-    display: block;
-    width: 100%;
   }
 }
