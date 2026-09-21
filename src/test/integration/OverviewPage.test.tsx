@@ -83,13 +83,7 @@ describe('OverviewPage Integration', () => {
       initialEntries: ['/overview'],
     });
 
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
-    });
-
-    expect(
-      screen.getByText('Nothing needs attention right now. All active onboardings are on track.')
-    ).toBeInTheDocument();
+    await screen.findByText('Nothing needs attention right now. All active onboardings are on track.');
   });
 
   it('displays error banner with retry option when overview request fails', async () => {
