@@ -73,7 +73,7 @@ describe('Overview Cross-App Synchronization', () => {
     });
 
     // Initial headcount is 428
-    expect(screen.getByRole('link', { name: /total headcount: 428 employees/i })).toBeInTheDocument();
+    await screen.findByRole('link', { name: /total headcount: 428 employees/i });
 
     // Navigate to Employees and create a new employee starting in 4 days
     const employeesNavLink = screen.getByRole('link', { name: 'Employees' });

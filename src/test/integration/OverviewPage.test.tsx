@@ -26,7 +26,7 @@ describe('OverviewPage Integration', () => {
     ).toBeInTheDocument();
 
     // 1. Needs attention section
-    const attentionHeading = screen.getByRole('heading', { level: 2, name: 'Needs attention' });
+    const attentionHeading = await screen.findByRole('heading', { level: 2, name: 'Needs attention' });
     expect(attentionHeading).toBeInTheDocument();
 
     const attentionList = screen.getByRole('list', { name: /employees requiring immediate attention/i });

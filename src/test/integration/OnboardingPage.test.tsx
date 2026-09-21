@@ -19,6 +19,9 @@ describe('OnboardingPage Integration', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'Onboarding' })).toBeInTheDocument();
     });
 
+    // Wait for tabs to render after data fetch
+    await screen.findByRole('tab', { name: /all onboardings/i });
+
     // Subtitle
     expect(
       screen.getByText(/Track new starters and remaining onboarding tasks/)
@@ -42,11 +45,7 @@ describe('OnboardingPage Integration', () => {
       initialEntries: ['/onboarding'],
     });
 
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1, name: 'Onboarding' })).toBeInTheDocument();
-    });
-
-    const attentionTab = screen.getByRole('tab', { name: /needs attention/i });
+    const attentionTab = await screen.findByRole('tab', { name: /needs attention/i });
     await user.click(attentionTab);
 
     // Tab becomes selected
