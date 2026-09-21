@@ -147,7 +147,7 @@ Continuous Integration is configured via **GitHub Actions** (`.github/workflows/
 > - **Synthetic / Fictional Data**: All employees, departments, emails, and phone numbers are fictional entities generated for demonstration purposes.
 > - **Client-Side Mocking**: Network requests to `/api/*` are intercepted by **Mock Service Worker (MSW)** in the browser. There is no remote database or backend server.
 > - **Persistence Model**: Mutations (creating/editing employees, toggling onboarding tasks) are persisted in the browser's `localStorage` using a versioned schema with corruption recovery. Clearing browser storage or clicking "Reset to Baseline" in the footer restores the pristine 25-employee seed state.
-> - **Simulated Authentication**: The session represents a fixed demo user ("HR Administrator") with administrative privileges. Real production multi-tenant authentication is outside the scope of this project.
+> - **No Authentication or Authorization**: Authentication and authorization are intentionally not implemented. The workspace operates as an open frontend demonstration without access controls or login flows (the header user profile is static contextual display only).
 
 ---
 

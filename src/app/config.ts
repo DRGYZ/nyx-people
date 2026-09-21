@@ -5,5 +5,3 @@ export const DEMO_USER = {
   initials: 'EV',
   role: 'People Operations',
 };
-
-export const SYSTEM_TAGLINE = 'Nyx People · Modern People Operations System';
