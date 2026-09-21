@@ -323,7 +323,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               id="field-email"
               type="email"
               {...register('email')}
-              placeholder="e.g. clara.oswald@ledger.hr"
+              placeholder="e.g. clara.oswald@nyxpeople.com"
               aria-required="true"
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? 'field-email-error' : undefined}

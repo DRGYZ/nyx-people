@@ -124,7 +124,7 @@ test.describe('People Operations Workspace — Milestone 4 Operational Overview'
     // 3. Fill form
     await page.getByLabel('First name *').fill('Camille');
     await page.getByLabel('Last name *').fill('Laurent');
-    await page.getByLabel('Work email *').fill('camille.laurent@ledger.hr');
+    await page.getByLabel('Work email *').fill('camille.laurent@nyxpeople.com');
     await page.getByLabel('Phone number *').fill('+33 6 99 88 77 66');
     await page.getByLabel('Date of birth *').fill('1991-03-22');
     await page.getByLabel('Street address *').fill('10 Boulevard Haussmann');

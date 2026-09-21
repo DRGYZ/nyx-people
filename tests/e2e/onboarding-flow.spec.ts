@@ -122,7 +122,7 @@ test.describe('People Operations Workspace — Milestone 3 Onboarding Workflows'
     // 2. Fill form
     await page.getByLabel(/first name/i).fill('Lucas');
     await page.getByLabel(/last name/i).fill('Moreau');
-    await page.getByLabel(/work email/i).fill('lucas.moreau@ledger.hr');
+    await page.getByLabel(/work email/i).fill('lucas.moreau@nyxpeople.com');
     await page.getByLabel(/phone number/i).fill('+33 1 42 68 55 99');
     await page.getByLabel(/date of birth/i).fill('1994-06-12');
     await page.getByLabel(/street address/i).fill('8 Rue de la Paix');

@@ -45,7 +45,7 @@ test.describe('People Operations Workspace — Milestone 2 Create & Edit Workflo
     // 4. Fill form with valid employee details
     await firstNameInput.fill('Clara');
     await page.getByLabel(/last name/i).fill('Oswald');
-    await page.getByLabel(/work email/i).fill('clara.oswald@ledger.hr');
+    await page.getByLabel(/work email/i).fill('clara.oswald@nyxpeople.com');
     await page.getByLabel(/phone number/i).fill('+33 1 42 68 55 00');
     await page.getByLabel(/date of birth/i).fill('1996-11-23');
     await page.getByLabel(/street address/i).fill('14 Rue de la Paix');

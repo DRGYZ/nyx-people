@@ -78,7 +78,7 @@ describe('EmployeeMockStore Onboarding Operations', () => {
     const newEmp = store.createEmployee({
       firstName: 'Alice',
       lastName: 'Smith',
-      email: 'alice.smith@ledger.hr',
+      email: 'alice.smith@nyxpeople.com',
       phone: '+33 1 23 45 67 89',
       dateOfBirth: '1992-05-15',
       street: '10 Rue de la Paix',

@@ -93,7 +93,7 @@ describe('Overview Cross-App Synchronization', () => {
     // Fill form with valid details
     await user.type(screen.getByLabelText(/first name/i), 'Elena');
     await user.type(screen.getByLabelText(/last name/i), 'Rostova');
-    await user.type(screen.getByLabelText(/work email/i), 'elena.rostova@ledger.hr');
+    await user.type(screen.getByLabelText(/work email/i), 'elena.rostova@nyxpeople.com');
     await user.type(screen.getByLabelText(/phone number/i), '+33 6 11 22 33 44');
     await user.type(screen.getByLabelText(/date of birth/i), '1992-06-15');
     await user.type(screen.getByLabelText(/street address/i), '12 Rue de Rivoli');

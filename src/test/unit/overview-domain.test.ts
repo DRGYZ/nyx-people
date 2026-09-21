@@ -17,7 +17,7 @@ describe('Overview Domain Selectors', () => {
     person: {
       firstName: 'Alice',
       lastName: 'Smith',
-      email: 'alice@ledger.hr',
+      email: 'alice@nyxpeople.com',
       phone: '+33 1 00 00 00 00',
       dateOfBirth: '1990-01-01',
       address: { street: '1 Rue de Paris', postalCode: '75001', city: 'Paris', country: 'France' },

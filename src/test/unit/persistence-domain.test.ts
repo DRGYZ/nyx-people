@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   STORAGE_KEY,
+  LEGACY_STORAGE_KEY,
   loadPersistedEmployees,
   savePersistedEmployees,
   EmployeeMockStore,
@@ -89,6 +90,70 @@ describe('Persistence and Domain Envelope Correctness', () => {
       expect(loaded).not.toBeNull();
       expect(loaded?.length).toBe(3);
       expect(loaded?.[0]?.id).toBe(baseline[0]?.id);
+    });
+  });
+
+  describe('Legacy Storage Migration', () => {
+    it('safely migrates valid legacy ledger-hr envelope to nyx-people and removes legacy key', () => {
+      const baseline = createBaselineEmployees().slice(0, 3);
+      const legacyPayload = {
+        version: 1,
+        employees: baseline,
+      };
+      localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(legacyPayload));
+
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      expect(localStorage.getItem(LEGACY_STORAGE_KEY)).not.toBeNull();
+
+      const loaded = loadPersistedEmployees();
+      expect(loaded).not.toBeNull();
+      expect(loaded?.length).toBe(3);
+      expect(loaded?.[0]?.id).toBe(baseline[0]?.id);
+
+      // Verify migration: new key exists with valid payload, legacy key deleted
+      expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull();
+      expect(localStorage.getItem(LEGACY_STORAGE_KEY)).toBeNull();
+
+      const migratedEnvelope = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+      expect(migratedEnvelope.version).toBe(1);
+      expect(migratedEnvelope.employees.length).toBe(3);
+    });
+
+    it('falls back to baseline when legacy storage envelope has invalid schema without corrupting state', () => {
+      const corruptPayload = {
+        version: 1,
+        employees: [{ invalid: 'data' }],
+      };
+      localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(corruptPayload));
+
+      const loaded = loadPersistedEmployees();
+      expect(loaded).toBeNull();
+
+      // Ensure new key was not written with corrupt data
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    });
+
+    it('falls back to baseline when legacy storage contains corrupt JSON', () => {
+      localStorage.setItem(LEGACY_STORAGE_KEY, '{ invalid json');
+
+      const loaded = loadPersistedEmployees();
+      expect(loaded).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    });
+
+    it('prefers existing new key if already populated and ignores legacy key', () => {
+      const modernBaseline = createBaselineEmployees().slice(0, 2);
+      savePersistedEmployees(modernBaseline);
+
+      const legacyBaseline = createBaselineEmployees().slice(0, 5);
+      localStorage.setItem(
+        LEGACY_STORAGE_KEY,
+        JSON.stringify({ version: 1, employees: legacyBaseline })
+      );
+
+      const loaded = loadPersistedEmployees();
+      expect(loaded).not.toBeNull();
+      expect(loaded?.length).toBe(2); // Loaded modern, not legacy
     });
   });
 

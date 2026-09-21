@@ -1,4 +1,4 @@
-export const BRAND_NAME = 'Ledger HR';
+export const BRAND_NAME = 'Nyx People';
 
 export const DEMO_USER = {
   name: 'Eleanor Vance',
@@ -6,4 +6,4 @@ export const DEMO_USER = {
   role: 'People Operations',
 };
 
-export const SYSTEM_TAGLINE = 'Ledger HR · Modern People Operations System';
+export const SYSTEM_TAGLINE = 'Nyx People · Modern People Operations System';

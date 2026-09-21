@@ -1,4 +1,4 @@
-# Ledger HR
+# Nyx People
 
 A modern, high-density People Operations workspace built with React 19, TypeScript, and Vite. Designed with an editorial, institutional visual system ("Human Systems") emphasizing information density, typography, robust state management, and strict accessibility.
 
@@ -6,7 +6,7 @@ A modern, high-density People Operations workspace built with React 19, TypeScri
 
 ## Project Context & Origin
 
-Ledger HR is an **independent, portfolio-grade reinterpretation** inspired by an earlier school project assignment (HRnet). 
+Nyx People is an **independent, portfolio-grade reinterpretation** inspired by an earlier school project assignment (HRnet). 
 
 - **Clean Slate**: Developed as a completely independent codebase with clean version history, modern tooling, and production software engineering practices.
 - **Independence**: It does not import, fork, or modify the historical jury repositories (`DRGYZ/hrnet-react`, `DRGYZ/react-hrnet-modal`).
@@ -97,7 +97,7 @@ src/
 ```bash
 # Clone repository
 git clone <repo-url>
-cd ledger-hr
+cd nyx-people
 
 # Install dependencies (respecting package-lock)
 npm ci
@@ -113,7 +113,7 @@ Starts the local Vite dev server at `http://localhost:5173`. MSW will automatica
 
 ## Verification & Commands
 
-Ledger HR enforces a comprehensive verification pipeline covering type safety, linting, unit/integration testing, production compilation, and end-to-end browser automation:
+Nyx People enforces a comprehensive verification pipeline covering type safety, linting, unit/integration testing, production compilation, and end-to-end browser automation:
 
 | Command | Description |
 | :--- | :--- |

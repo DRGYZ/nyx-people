@@ -55,7 +55,7 @@ describe('Employee Create Flow Integration', () => {
     // Fill form
     await user.type(screen.getByLabelText(/first name/i), 'Donna');
     await user.type(screen.getByLabelText(/last name/i), 'Noble');
-    await user.type(screen.getByLabelText(/work email/i), 'donna.noble@ledger.hr');
+    await user.type(screen.getByLabelText(/work email/i), 'donna.noble@nyxpeople.com');
     await user.type(screen.getByLabelText(/phone number/i), '+44 20 7946 0192');
     await user.type(screen.getByLabelText(/date of birth/i), '1990-04-12');
     await user.type(screen.getByLabelText(/street address/i), '42 Chiswick High Road');

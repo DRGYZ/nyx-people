@@ -32,10 +32,14 @@ import { PersistedEnvelopeV1, PersistedEnvelopeV1Schema } from '@/domain/schemas
 import { deriveOverviewData } from '@/domain/overview';
 import { createBaselineEmployees } from './fixtures';
 
-export const STORAGE_KEY = 'ledger-hr_employees_v1';
+export const STORAGE_KEY = 'nyx-people_employees_v1';
+export const LEGACY_STORAGE_KEY = 'ledger-hr_employees_v1';
 
 /**
  * Loads, parses, and validates the persisted employee storage envelope.
+ * If data exists under LEGACY_STORAGE_KEY ('ledger-hr_employees_v1') and STORAGE_KEY
+ * is not yet initialized, safely validates and migrates the legacy envelope to STORAGE_KEY,
+ * removing LEGACY_STORAGE_KEY only after a successful migration write.
  * Returns null if stored JSON is corrupt, schema is invalid, unknown version,
  * or contains duplicate IDs, triggering controlled fallback to baseline.
  */
@@ -44,7 +48,38 @@ export function loadPersistedEmployees(): Employee[] | null {
     return null;
   }
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    let raw = window.localStorage.getItem(STORAGE_KEY);
+
+    // One-time migration: If new key does not exist, check for legacy storage key
+    if (!raw) {
+      const legacyRaw = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacyRaw) {
+        try {
+          const legacyParsed = JSON.parse(legacyRaw);
+          const legacyResult = PersistedEnvelopeV1Schema.safeParse(legacyParsed);
+          if (legacyResult.success) {
+            // Write validated envelope to new key first
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(legacyResult.data));
+            // Remove legacy key only after successful write to new key
+            window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+            raw = JSON.stringify(legacyResult.data);
+          } else {
+            console.warn(
+              'Legacy persisted state schema validation failed, falling back to baseline:',
+              legacyResult.error
+            );
+            return null;
+          }
+        } catch (legacyErr) {
+          console.warn(
+            'Failed to parse legacy persisted employees from localStorage, falling back to baseline:',
+            legacyErr
+          );
+          return null;
+        }
+      }
+    }
+
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const result = PersistedEnvelopeV1Schema.safeParse(parsed);

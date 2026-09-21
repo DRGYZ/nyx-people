@@ -9,7 +9,7 @@ describe('Employee Validation Schemas', () => {
     firstName: 'Clara',
     lastName: 'Oswald',
     preferredName: 'Cleo',
-    email: 'clara.oswald@ledger.hr',
+    email: 'clara.oswald@nyxpeople.com',
     phone: '+33 1 42 68 55 00',
     dateOfBirth: '1996-11-23',
     street: '14 Rue de la Paix',
@@ -30,7 +30,7 @@ describe('Employee Validation Schemas', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.firstName).toBe('Clara');
-      expect(result.data.email).toBe('clara.oswald@ledger.hr');
+      expect(result.data.email).toBe('clara.oswald@nyxpeople.com');
       expect(result.data.managerId).toBe('EMP-0102');
     }
   });

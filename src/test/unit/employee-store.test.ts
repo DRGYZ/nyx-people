@@ -8,7 +8,7 @@ describe('EmployeeMockStore', () => {
   const sampleInput: EmployeeCreateInput = {
     firstName: 'Martha',
     lastName: 'Jones',
-    email: 'martha.jones@ledger.hr',
+    email: 'martha.jones@nyxpeople.com',
     phone: '+44 20 7946 0919',
     dateOfBirth: '1992-07-15',
     street: '10 Downing Street',
@@ -34,7 +34,7 @@ describe('EmployeeMockStore', () => {
     expect(created.id).toMatch(/^EMP-\d{4}$/);
     expect(created.person.firstName).toBe('Martha');
     expect(created.person.lastName).toBe('Jones');
-    expect(created.person.email).toBe('martha.jones@ledger.hr');
+    expect(created.person.email).toBe('martha.jones@nyxpeople.com');
     expect(created.employment.manager?.id).toBe('EMP-0102');
     expect(created.timestamps.createdAt).toBeDefined();
 
