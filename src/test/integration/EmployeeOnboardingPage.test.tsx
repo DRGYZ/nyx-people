@@ -24,7 +24,7 @@ describe('EmployeeOnboardingPage Integration', () => {
     expect(screen.getByText('Paris')).toBeInTheDocument();
 
     // Progress card
-    expect(screen.getByText(/4 of 6 complete · 67%/)).toBeInTheDocument();
+    expect(screen.getByText(/4 of 6 complete/)).toBeInTheDocument();
 
     // Checklist tasks
     expect(screen.getByRole('heading', { level: 2, name: 'Tasks' })).toBeInTheDocument();
@@ -59,9 +59,9 @@ describe('EmployeeOnboardingPage Integration', () => {
     // Click checkbox to complete task
     await user.click(accountCheckbox);
 
-    // Progress updates to 5 of 6 (83%)
+    // Progress updates to 5 of 6
     await waitFor(() => {
-      expect(screen.getByText(/5 of 6 complete · 83%/)).toBeInTheDocument();
+      expect(screen.getByText(/5 of 6 complete/)).toBeInTheDocument();
     });
     expect(accountCheckbox).toHaveAttribute('aria-checked', 'true');
 
@@ -70,7 +70,7 @@ describe('EmployeeOnboardingPage Integration', () => {
     await user.click(managerCheckbox);
 
     await waitFor(() => {
-      expect(screen.getByText(/6 of 6 complete · 100%/)).toBeInTheDocument();
+      expect(screen.getByText(/6 of 6 complete/)).toBeInTheDocument();
     });
     expect(
       screen.getAllByText(/All onboarding tasks complete\. Day-one readiness achieved\./).length

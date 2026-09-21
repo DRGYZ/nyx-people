@@ -6,6 +6,7 @@ import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
 import { DepartmentBadge } from '@/components/ui/DepartmentBadge';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatStartUrgency } from '@/domain/onboarding';
+import { formatFullDate } from '@/utils/formatters';
 import styles from './OnboardingDetailHeader.module.css';
 
 interface OnboardingDetailHeaderProps {
@@ -26,7 +27,7 @@ export const OnboardingDetailHeader: React.FC<OnboardingDetailHeaderProps> = ({
         <span>Back to Onboarding</span>
       </Link>
 
-      <div className={styles.banner}>
+      <div className={styles.identityHeader}>
         <div className={styles.employeeProfile}>
           <InitialsAvatar initials={initials} size="lg" />
           <div className={styles.detailsCol}>
@@ -38,10 +39,10 @@ export const OnboardingDetailHeader: React.FC<OnboardingDetailHeaderProps> = ({
 
             <div className={styles.metaRow}>
               <span>{employee.employment.jobTitle}</span>
-              <span>·</span>
+              <span aria-hidden="true">·</span>
               <span>{employee.employment.location}</span>
-              <span>·</span>
-              <span>Starts {employee.employment.startDate} ({urgency})</span>
+              <span aria-hidden="true">·</span>
+              <span className="tabular-nums">Starts {formatFullDate(employee.employment.startDate)} ({urgency})</span>
             </div>
           </div>
         </div>

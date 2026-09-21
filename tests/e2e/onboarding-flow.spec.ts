@@ -46,8 +46,8 @@ test.describe('People Operations Workspace — Milestone 3 Onboarding Workflows'
     await expect(page).toHaveURL(/\/employees\/EMP-0941\/onboarding/);
     await expect(page.getByRole('heading', { level: 1, name: 'Noah Williams' })).toBeVisible();
 
-    // Verify progress card initial state: 4 of 6 complete (67%)
-    await expect(page.getByText(/4 of 6 complete · 67%/)).toBeVisible();
+    // Verify progress card initial state: 4 of 6 complete
+    await expect(page.getByText(/4 of 6 complete/)).toBeVisible();
 
     // Verify all 6 canonical tasks are listed
     const checklist = page.getByRole('list', { name: /operational readiness checklist/i });
@@ -67,8 +67,8 @@ test.describe('People Operations Workspace — Milestone 3 Onboarding Workflows'
     await accountCheckbox.click();
     await patchResponse1;
 
-    // Progress updates to 5 of 6 (83%)
-    await expect(page.getByText(/5 of 6 complete · 83%/)).toBeVisible();
+    // Progress updates to 5 of 6
+    await expect(page.getByText(/5 of 6 complete/)).toBeVisible();
     await expect(accountCheckbox).toHaveAttribute('aria-checked', 'true');
     await expect(accountCheckbox).toBeEnabled();
 
@@ -152,7 +152,7 @@ test.describe('People Operations Workspace — Milestone 3 Onboarding Workflows'
 
     await expect(page).toHaveURL(/\/employees\/EMP-.*\/onboarding/);
     await expect(page.getByRole('heading', { level: 1, name: 'Lucas Moreau' })).toBeVisible();
-    await expect(page.getByText(/0 of 6 complete · 0%/)).toBeVisible();
+    await expect(page.getByText(/0 of 6 complete/)).toBeVisible();
 
     // Toggle first task
     const personalDetailsCheckbox = page.getByRole('checkbox', { name: /personal details/i });
@@ -163,13 +163,13 @@ test.describe('People Operations Workspace — Milestone 3 Onboarding Workflows'
     await personalDetailsCheckbox.click();
     await patchResponse2;
 
-    await expect(page.getByText(/1 of 6 complete · 17%/)).toBeVisible();
+    await expect(page.getByText(/1 of 6 complete/)).toBeVisible();
     await expect(personalDetailsCheckbox).toHaveAttribute('aria-checked', 'true');
     await expect(personalDetailsCheckbox).toBeEnabled();
 
     // 5. Reload to verify persistence
     await page.reload();
-    await expect(page.getByText(/1 of 6 complete · 17%/)).toBeVisible();
+    await expect(page.getByText(/1 of 6 complete/)).toBeVisible();
   });
 
   test('WCAG 2.2 AA Accessibility audit and mobile responsive layout', async ({ page }) => {

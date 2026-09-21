@@ -84,7 +84,7 @@ export const NeedsAttentionSection: React.FC<NeedsAttentionSectionProps> = ({ it
 
                     {item.remainingTasks.length > 0 && (
                       <div className={styles.tasksList}>
-                        <span className={styles.pendingLabel}>Pending:</span>
+                        <span className={styles.pendingLabel}>Remaining:</span>
                         {item.remainingTasks.map((task) => (
                           <span key={task} className={styles.taskTag}>
                             {task}

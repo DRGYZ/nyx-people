@@ -18,16 +18,14 @@
   color: var(--text-primary);
 }
 
-.banner {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-app);
-  border-radius: var(--radius-md);
-  padding: 20px 24px;
+.identityHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .employeeProfile {
@@ -93,15 +91,14 @@
 }
 
 @media (max-width: 640px) {
-  .banner {
+  .identityHeader {
     flex-direction: column;
     align-items: flex-start;
+    gap: 16px;
   }
 
   .actionRow {
     width: 100%;
-    justify-content: flex-end;
-    border-top: 1px solid var(--border-subtle);
-    padding-top: 12px;
+    justify-content: flex-start;
   }
 }

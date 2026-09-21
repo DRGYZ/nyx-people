@@ -294,7 +294,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               }
             />
             <span id="field-dateOfBirth-hint" className={styles.fieldHint}>
-              Must be at least 16 years old (YYYY-MM-DD)
+              YYYY-MM-DD
             </span>
             {errors.dateOfBirth && (
               <span id="field-dateOfBirth-error" className={styles.fieldError}>

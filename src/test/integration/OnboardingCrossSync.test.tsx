@@ -21,14 +21,14 @@ describe('Onboarding Cross-App Synchronization', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'Noah Williams' })).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/4 of 6 complete · 67%/)).toBeInTheDocument();
+    expect(screen.getByText(/4 of 6 complete/)).toBeInTheDocument();
 
     // Toggle 'Account provisioned'
     const accountCheckbox = screen.getByRole('checkbox', { name: /account provisioned/i });
     await user.click(accountCheckbox);
 
     await waitFor(() => {
-      expect(screen.getByText(/5 of 6 complete · 83%/)).toBeInTheDocument();
+      expect(screen.getByText(/5 of 6 complete/)).toBeInTheDocument();
     });
 
     unmount();

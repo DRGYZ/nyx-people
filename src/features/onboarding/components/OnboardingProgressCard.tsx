@@ -13,6 +13,11 @@ export const OnboardingProgressCard: React.FC<OnboardingProgressCardProps> = ({
   onboarding,
   progress,
 }) => {
+  // Strip redundant "Onboarding is X of Y complete. " prefix if present to keep only useful remaining-task message
+  const remainingMessage = onboarding.attentionSummary
+    ? onboarding.attentionSummary.replace(/^Onboarding is \d+ of \d+ complete\.\s*/i, '')
+    : null;
+
   return (
     <div className={styles.card} aria-labelledby="onboarding-progress-heading">
       <div className={styles.topRow}>
@@ -20,12 +25,12 @@ export const OnboardingProgressCard: React.FC<OnboardingProgressCardProps> = ({
           Onboarding progress
         </h2>
         <span className={`${styles.progressText} tabular-nums`}>
-          {progress.completed} of {progress.total} complete · {progress.percent}%
+          {progress.completed} of {progress.total} complete
         </span>
       </div>
 
-      {onboarding.attentionSummary && (
-        <p className={styles.summaryText}>{onboarding.attentionSummary}</p>
+      {remainingMessage && (
+        <p className={styles.summaryText}>{remainingMessage}</p>
       )}
 
       <div
