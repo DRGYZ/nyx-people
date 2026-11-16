@@ -1,6 +1,16 @@
 # Nyx People
 
-A modern, high-density People Operations workspace built with React 19, TypeScript, and Vite. Designed with an editorial, institutional visual system ("Human Systems") emphasizing information density, typography, robust state management, and strict accessibility.
+A React 19 and TypeScript demo for browsing an employee directory and managing onboarding checklists with fictional data.
+
+[Open the live demo](https://nyx-people.vercel.app/)
+
+![Nyx People overview showing onboarding tasks, upcoming starts, and workforce counts](screenshots/desktop/01-overview.png)
+
+### Try the onboarding workflow
+
+1. Open **Overview** in a fresh browser profile. **Upcoming starts** shows arrivals in the next 14 days. In **Needs attention**, look for someone whose start date has passed and who still has tasks to complete.
+2. From **Needs attention**, open Noah Williams's checklist and complete **Account provisioned** and **Manager introduction**.
+3. Return to **Overview**. Noah drops out of **Needs attention** once both tasks are complete.
 
 ---
 
@@ -16,10 +26,10 @@ Nyx People is an **independent, portfolio-grade reinterpretation** inspired by a
 
 ## Core Features & Workflows
 
-### 1. Operational Overview (`/`)
+### 1. Operational Overview (`/overview`)
 - **Action-Oriented Dashboard**: Answers the core operational question: *"What needs my attention right now?"*
 - **Needs Attention Triage**: Highlights overdue onboarding milestones, incomplete tasks, and pending actions.
-- **Upcoming Starts**: 30-day lookahead tracking pending start dates and preparation status.
+- **Upcoming Starts**: Shows eligible employees starting today or within the next 14 days.
 - **Recently Updated**: Audit trail of recent employee profile and record changes.
 - **Workforce Snapshot**: High-level organizational metrics (headcount, active onboarding count, department distribution).
 
@@ -39,7 +49,7 @@ Nyx People is an **independent, portfolio-grade reinterpretation** inspired by a
 - **Context Preservation**: Seamlessly navigates back to the exact directory state (page, filters, query) using search parameter preservation.
 - **Direct Onboarding Access**: One-click access to the employee's onboarding checklist.
 
-### 5. Onboarding Pipeline (`/onboarding`, `/onboarding/:employeeId`)
+### 5. Onboarding Pipeline (`/onboarding`, `/employees/:employeeId/onboarding`)
 - **Cohort Tracking**: Monitor employees across Pre-boarding, Day One, and First Month phases.
 - **Checklist Automation**: Automatic initialization of canonical onboarding tasks upon employee creation.
 - **Transactional Task Completion**: Optimistic UI toggles with request serialization and cross-application state synchronization (Profile, Overview, and Directory reflect updates instantly).
@@ -54,23 +64,13 @@ src/
 │   ├── router/           # React Router v7 routes with React.lazy code splitting
 │   ├── AppShell.tsx      # Main layout, SkipLink, Navigation, Suspense boundaries
 │   └── config.ts         # Navigation items and demo user context
-├── components/           # Shared design system components
-│   ├── common/           # Header, PageHeader, ErrorSummary, ConfirmationDialog
-│   └── ui/               # Button, Input, Select, Badge, Skeleton, Fallbacks
+├── components/ui/        # Shared buttons, inputs, badges, dialogs, and loading states
 ├── data/                 # Data layer, fixtures, mock store, and MSW handlers
-│   ├── fixtures/         # Immutable baseline seed data (25 employees)
-│   ├── mock/             # Store with versioned localStorage schema validation
-│   └── handlers/         # MSW REST API handlers simulating backend endpoints
-├── features/             # Domain feature modules
-│   ├── employee-form/    # Form components, ManagerCombobox, schemas
-│   ├── employee-profile/ # Profile view components and tabs
-│   ├── employees/        # Directory table, mobile card list, hooks
-│   ├── onboarding/       # Onboarding workspace, checklist, progress bar
-│   └── overview/         # Dashboard metrics, Upcoming Starts, Attention queue
-├── hooks/                # Custom hooks (useMediaQuery, useRouteFocus, useCombobox)
-├── lib/                  # Utilities, date formatters, and helper functions
-├── test/                 # Unit and integration test suites
-└── types/                # Domain TypeScript models and API contracts
+│   └── mock/             # MSW handlers, 428 employee fixtures, and localStorage-backed store
+├── domain/               # Employee models, schemas, clock, and onboarding and overview logic
+├── features/             # Directory, form, profile, onboarding, and overview components
+├── routes/               # Route pages
+└── test/                 # Unit and integration test suites
 ```
 
 ### Performance Optimizations
@@ -96,7 +96,7 @@ src/
 ### Installation
 ```bash
 # Clone repository
-git clone <repo-url>
+git clone https://github.com/DRGYZ/nyx-people.git
 cd nyx-people
 
 # Install dependencies (respecting package-lock)
@@ -119,13 +119,13 @@ Nyx People enforces a comprehensive verification pipeline covering type safety, 
 | :--- | :--- |
 | `npm run check` | Runs TypeScript compiler check (`tsc --noEmit`) |
 | `npm run lint` | Runs ESLint with modern flat config (`eslint .`) |
-| `npm run test` | Runs Vitest unit & integration test suite (22 files, 142 tests) |
+| `npm run test` | Runs Vitest unit and integration tests |
 | `npm run test:watch` | Runs Vitest in interactive watch mode |
-| `npm run test:e2e` | Runs Playwright tests on Chromium and Mobile Chrome (26 tests) |
+| `npm run test:e2e` | Runs Playwright tests on Chromium and Mobile Chrome |
 | `npm run build` | Compiles production assets (`tsc -b && vite build`) |
 | `npm run build:analyze` | Generates interactive bundle visualization (`stats.html`) |
 | `npm run verify` | Runs the full release gate (`check` + `lint` + `test` + `build` + `test:e2e`) |
-| `npm audit` | Verifies security vulnerabilities (clean: 0 vulnerabilities) |
+| `npm audit` | Checks dependencies against current security advisories |
 
 ---
 
@@ -146,11 +146,5 @@ Continuous Integration is configured via **GitHub Actions** (`.github/workflows/
 > **This application is a frontend portfolio demonstration:**
 > - **Synthetic / Fictional Data**: All employees, departments, emails, and phone numbers are fictional entities generated for demonstration purposes.
 > - **Client-Side Mocking**: Network requests to `/api/*` are intercepted by **Mock Service Worker (MSW)** in the browser. There is no remote database or backend server.
-> - **Persistence Model**: Mutations (creating/editing employees, toggling onboarding tasks) are persisted in the browser's `localStorage` using a versioned schema with corruption recovery. Clearing browser storage or clicking "Reset to Baseline" in the footer restores the pristine 25-employee seed state.
+> - **Persistence Model**: Employee edits and checklist progress are saved in this browser's `localStorage`. A fresh browser profile starts with 428 fictional employees. Onboarding start dates are set relative to the day the demo data is seeded, so a fresh session includes upcoming arrivals and starts that have already passed with unfinished tasks.
 > - **No Authentication or Authorization**: Authentication and authorization are intentionally not implemented. The workspace operates as an open frontend demonstration without access controls or login flows (the header user profile is static contextual display only).
-
----
-
-## License
-
-MIT License. Designed and developed independently.

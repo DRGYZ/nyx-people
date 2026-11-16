@@ -1,13 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { EmployeeMockStore } from '@/data/mock/store';
+import { resetClock, setClock } from '@/domain/clock';
 
-describe('EmployeeMockStore Onboarding Operations', () => {
+describe.each([
+  ['2026-11-16', '2026-11-20', '2026-11-11'],
+  ['2027-02-27', '2027-03-03', '2027-02-22'],
+])('EmployeeMockStore Onboarding Operations on %s', (referenceDate, upcomingDate, overdueDate) => {
   let store: EmployeeMockStore;
 
   beforeEach(() => {
+    setClock(`${referenceDate}T12:00:00`);
+    window.localStorage.clear();
     store = new EmployeeMockStore();
-    store.resetToBaseline();
   });
+
+  afterEach(resetClock);
 
   it('fetches onboarding list and counts', () => {
     const res = store.getOnboardingList('all');
@@ -18,11 +25,17 @@ describe('EmployeeMockStore Onboarding Operations', () => {
 
     const noahSummary = res.data.find((item) => item.employee.id === 'EMP-0941');
     expect(noahSummary).toBeDefined();
+    expect(noahSummary?.employee.employment.startDate).toBe(upcomingDate);
+    expect(noahSummary?.startingSoon).toBe(true);
     expect(noahSummary?.progress.completed).toBe(4);
     expect(noahSummary?.progress.total).toBe(6);
     expect(noahSummary?.needsAttention).toBe(true);
     expect(noahSummary?.remainingTasks).toContain('Account provisioned');
     expect(noahSummary?.remainingTasks).toContain('Manager introduction');
+
+    const overdue = res.data.find((item) => item.employee.employment.startDate === overdueDate);
+    expect(overdue?.startingSoon).toBe(false);
+    expect(overdue?.needsAttention).toBe(true);
   });
 
   it('filters onboarding list by tab', () => {
@@ -90,7 +103,7 @@ describe('EmployeeMockStore Onboarding Operations', () => {
       location: 'Paris',
       employmentType: 'full-time',
       status: 'onboarding',
-      startDate: '2026-09-25',
+      startDate: upcomingDate,
     });
 
     expect(newEmp.onboarding).toBeDefined();

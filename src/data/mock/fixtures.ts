@@ -1,4 +1,5 @@
 import { Employee, Department, OfficeLocation, EmploymentType, EmployeeStatus } from '@/domain/employee';
+import { DEFAULT_REFERENCE_DATE, getNow } from '@/domain/clock';
 
 // Seeded PRNG (Mulberry32) for perfectly deterministic data generation
 function createPRNG(seed: number) {
@@ -516,9 +517,22 @@ export function generateDeterministicEmployees(): Employee[] {
 export const deterministicEmployees: Employee[] = generateDeterministicEmployees();
 
 /**
- * Creates a clean, isolated deep clone of the baseline fixture employees.
- * Guarantees that mutations will never alter imported fixture objects in memory.
+ * Clones the baseline and preserves the onboarding scenarios relative to the day it is seeded.
  */
 export function createBaselineEmployees(): Employee[] {
-  return structuredClone(deterministicEmployees);
+  const employees = structuredClone(deterministicEmployees);
+  const today = getNow();
+  // Shift date-only values by calendar days, independently of daylight saving time.
+  const referenceDay = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const offset = referenceDay - DEFAULT_REFERENCE_DATE.getTime();
+
+  for (const { employment } of employees) {
+    if (employment.status === 'onboarding') {
+      employment.startDate = new Date(Date.parse(employment.startDate) + offset)
+        .toISOString()
+        .slice(0, 10);
+    }
+  }
+
+  return employees;
 }

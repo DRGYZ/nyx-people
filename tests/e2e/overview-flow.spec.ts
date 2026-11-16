@@ -3,14 +3,8 @@ import AxeBuilder from '@axe-core/playwright';
 
 test.describe('People Operations Workspace — Milestone 4 Operational Overview', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/employees');
-    await page.evaluate(() => {
-      try {
-        window.localStorage.clear();
-      } catch {
-        // ignore
-      }
-    });
+    // Keep the browser's real timers running while making the demo date deterministic.
+    await page.clock.setFixedTime(new Date('2027-02-27T12:00:00'));
   });
 
   test('FLOW 1: Overview navigation, redirect from root, section verification, and Needs Attention resolution', async ({
@@ -37,6 +31,7 @@ test.describe('People Operations Workspace — Milestone 4 Operational Overview'
 
     const attentionList = page.getByRole('list', { name: 'Employees requiring immediate attention' });
     await expect(attentionList).toBeVisible();
+    await expect(attentionList.getByText(/^Started \d+ days ago$/).first()).toBeVisible();
     const noahCard = attentionList.getByRole('listitem').filter({ hasText: 'Noah Williams' });
     await expect(noahCard).toBeVisible();
     await expect(noahCard.getByText('Account provisioned')).toBeVisible();
@@ -49,7 +44,7 @@ test.describe('People Operations Workspace — Milestone 4 Operational Overview'
     const upcomingHeading = page.getByRole('heading', { level: 2, name: 'Upcoming starts' });
     await expect(upcomingHeading).toBeVisible();
     const upcomingList = page.getByRole('list', { name: 'Employees scheduled to start within 14 days' });
-    await expect(upcomingList).toBeVisible();
+    await expect(upcomingList.getByText('Noah Williams')).toBeVisible();
     const viewNewStarters = page.getByRole('link', { name: /view new starters/i });
     await expect(viewNewStarters).toHaveAttribute('href', '/employees?view=new-starters');
 
@@ -133,9 +128,9 @@ test.describe('People Operations Workspace — Milestone 4 Operational Overview'
     await page.getByLabel('Country *').fill('France');
     await page.getByLabel('Job title *').fill('Director of Talent');
 
-    // Start date in 4 days from reference date (2026-09-24)
+    // Start four days after the fixed browser date.
     const startDateInput = page.getByLabel('Start date *');
-    await startDateInput.fill('2026-09-24');
+    await startDateInput.fill('2027-03-03');
 
     // Submit
     const submitBtn = page.getByRole('button', { name: /create employee/i });

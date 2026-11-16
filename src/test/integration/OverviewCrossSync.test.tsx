@@ -1,13 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithRouter } from '@/test/utils';
 import { mockStore } from '@/data/mock/store';
+import { resetClock, setClock } from '@/domain/clock';
 
-describe('Overview Cross-App Synchronization', () => {
+describe.each([
+  ['2026-11-16', '2026-11-20'],
+  ['2027-02-27', '2027-03-03'],
+])('Overview Cross-App Synchronization on %s', (referenceDate, upcomingDate) => {
   beforeEach(() => {
+    setClock(`${referenceDate}T12:00:00`);
     mockStore.resetToBaseline();
   });
+
+  afterEach(resetClock);
 
   it('reflects onboarding task completion by removing employee from Needs Attention', async () => {
     const user = userEvent.setup();
@@ -104,7 +111,7 @@ describe('Overview Cross-App Synchronization', () => {
 
     const startDateInput = screen.getByLabelText(/start date/i);
     await user.clear(startDateInput);
-    await user.type(startDateInput, '2026-09-24'); // In 4 days from reference date
+    await user.type(startDateInput, upcomingDate);
 
     // Submit form
     const submitBtn = screen.getByRole('button', { name: /create employee/i });
