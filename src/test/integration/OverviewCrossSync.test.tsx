@@ -28,7 +28,7 @@ describe.each([
       expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
     });
 
-    const attentionList = screen.getByRole('list', { name: /employees requiring immediate attention/i });
+    const attentionList = await screen.findByRole('list', { name: /employees requiring immediate attention/i });
     expect(within(attentionList).getByText('Noah Williams')).toBeInTheDocument();
     const noahCard = within(attentionList).getByText('Noah Williams').closest('li')!;
     expect(within(noahCard).getByText(/2 tasks remaining/i)).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe.each([
     });
 
     // Noah Williams is no longer in Needs Attention!
-    const updatedAttentionList = screen.getByRole('list', { name: /employees requiring immediate attention/i });
+    const updatedAttentionList = await screen.findByRole('list', { name: /employees requiring immediate attention/i });
     expect(within(updatedAttentionList).queryByText('Noah Williams')).not.toBeInTheDocument();
   });
 
@@ -131,7 +131,7 @@ describe.each([
     });
 
     // 1. Workforce snapshot headcount incremented from 428 to 429
-    expect(screen.getByRole('link', { name: /total headcount: 429 employees/i })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /total headcount: 429 employees/i })).toBeInTheDocument();
 
     // 2. Upcoming starts includes Elena Rostova
     const upcomingList = screen.getByRole('list', { name: /employees scheduled to start within 14 days/i });
